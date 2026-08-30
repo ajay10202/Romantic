@@ -1,205 +1,104 @@
-/* Base Reset & Styling */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
 }
 
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #030308;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #ffffff;
 }
 
-/* Trigger Button */
-.trigger-btn {
-    padding: 15px 30px;
-    background: #fff;
-    color: #667eea;
-    border: none;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+#canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
 }
 
-.trigger-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 25px rgba(0,0,0,0.15);
+.ui-layer {
+  position: relative;
+  z-index: 10;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2.5rem 1.5rem;
+  pointer-events: none;
 }
 
-/* Modal Overlay - Hidden by default */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 1000;
+.header {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Modal Active State */
-.modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
+.header h1 {
+  font-size: 2.2rem;
+  letter-spacing: 0.35em;
+  font-weight: 800;
+  background: linear-gradient(135deg, #00f2fe, #4facfe, #ff0844);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.3rem;
 }
 
-/* Animated Login Card */
-.login-container {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 40px 30px;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    max-width: 400px;
-    position: relative;
-    /* Starting state for animation: scaled down and pushed down slightly */
-    transform: scale(0.8) translateY(30px);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+.header p {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
 }
 
-/* Card Active State */
-.modal-overlay.active .login-container {
-    transform: scale(1) translateY(0);
-    opacity: 1;
+.key-indicator {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.15);
+  transition: all 0.15s ease-out;
 }
 
-/* Close Button */
-.close-btn {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 28px;
-    color: #888;
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.3s ease;
+.key-indicator.active {
+  color: #00f2fe;
+  transform: scale(1.25);
+  text-shadow: 0 0 25px rgba(0, 242, 254, 0.8);
 }
 
-.close-btn:hover {
-    color: #333;
+.controls-panel {
+  display: flex;
+  gap: 1rem;
+  pointer-events: auto;
 }
 
-.login-container h2 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    font-weight: 600;
+.ctrl-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 0.75rem 1.4rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 30px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
 }
 
-/* Dynamic Input Fields (Floating Labels) */
-.input-group {
-    position: relative;
-    margin-bottom: 25px;
+.ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #00f2fe;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+  transform: translateY(-2px);
 }
 
-.input-group input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    outline: none;
-    font-size: 16px;
-    background: transparent;
-    transition: all 0.3s ease;
-}
-
-.input-group label {
-    position: absolute;
-    top: 50%;
-    left: 15px;
-    transform: translateY(-50%);
-    color: #888;
-    font-size: 16px;
-    pointer-events: none;
-    transition: 0.3s ease;
-    background: #fff;
-    padding: 0 5px;
-}
-
-.input-group input:focus,
-.input-group input:valid {
-    border-color: #667eea;
-}
-
-.input-group input:focus + label,
-.input-group input:valid + label {
-    top: 0;
-    font-size: 12px;
-    color: #667eea;
-}
-
-/* Password Toggle Icon */
-.toggle-password {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #888;
-    font-size: 14px;
-    user-select: none;
-}
-
-.toggle-password:hover {
-    color: #333;
-}
-
-/* Action Buttons and Links */
-.actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    font-size: 13px;
-}
-
-.actions a {
-    color: #667eea;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.actions a:hover {
-    color: #764ba2;
-}
-
-.login-btn {
-    width: 100%;
-    padding: 12px;
-    background: #667eea;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.1s ease;
-}
-
-.login-btn:hover {
-    background: #764ba2;
-}
-
-.login-btn:active {
-    transform: scale(0.98);
-}
-
-.login-btn.loading {
-    background: #ccc;
-    pointer-events: none;
-}
