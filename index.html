@@ -1,32 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cosmic Soundboard | Interactive WebGL Experience</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Three.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abirami Tea Stall | Premium Tea & Snacks</title>
+    
+    <!-- Google Fonts for a professional look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="canvas-container"></div>
 
-  <!-- UI Overlay -->
-  <main class="ui-layer">
-    <header class="header">
-      <h1>COSMOS</h1>
-      <p>Press any key (A–Z) or click/tap anywhere to trigger sound & visual shockwaves</p>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="logo-img">
+                    <!-- Insert your generated logo image here -->
+                    <span>Logo</span> 
+                </div>
+                <span class="brand-name">Abirami Tea Stall</span>
+            </div>
+            
+            <div class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#menu">Menu</a></li>
+                <li><a href="#location">Visit Us</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content fade-on-scroll">
+            <h1>The Perfect Cup,<br>Every Single Time.</h1>
+            <p>Experience the authentic taste of tradition with our signature teas and fresh snacks.</p>
+            <a href="#menu" class="btn btn-primary">View Our Menu</a>
+        </div>
     </header>
 
-    <div class="controls-panel">
-      <button id="btn-theme" class="ctrl-btn">Cycle Theme</button>
-      <button id="btn-warp" class="ctrl-btn">Toggle Warp Speed</button>
-    </div>
+    <!-- About Section -->
+    <section id="about" class="about section-padding">
+        <div class="container fade-on-scroll">
+            <h2 class="section-title">Our Story</h2>
+            <p class="section-subtitle">Brewing memories in the heart of Santhavelur.</p>
+            <div class="about-grid">
+                <div class="about-text">
+                    <p>At Abirami Tea Stall, we believe a great cup of tea is more than just a drink—it's a moment of peace. We source the finest leaves and freshest ingredients to bring you authentic, comforting flavors that remind you of home.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div id="key-display" class="key-indicator">PRESS A KEY</div>
-  </main>
+    <!-- Menu Section -->
+    <section id="menu" class="menu section-padding bg-light">
+        <div class="container fade-on-scroll">
+            <h2 class="section-title">Signature Menu</h2>
+            <p class="section-subtitle">Freshly prepared to order.</p>
+            
+            <div class="menu-grid">
+                <!-- Menu Item 1 -->
+                <div class="menu-card">
+                    <div class="menu-card-content">
+                        <h3>Filter Coffee</h3>
+                        <p>Authentic South Indian degree coffee with the perfect frothy finish.</p>
+                        <span class="price">Freshly Brewed</span>
+                    </div>
+                </div>
+                
+                <!-- Menu Item 2 -->
+                <div class="menu-card">
+                    <div class="menu-card-content">
+                        <h3>Masala Chai</h3>
+                        <p>Our special blend of strong tea leaves infused with aromatic cardamom and ginger.</p>
+                        <span class="price">House Special</span>
+                    </div>
+                </div>
 
-  <script src="script.js"></script>
+                <!-- Menu Item 3 -->
+                <div class="menu-card">
+                    <div class="menu-card-content">
+                        <h3>Hot Snacks</h3>
+                        <p>Crispy Medu Vadais, Onion Bajjis, and sweet buns. Made fresh daily.</p>
+                        <span class="price">Evening Delight</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location Section -->
+    <section id="location" class="location section-padding">
+        <div class="container fade-on-scroll">
+            <div class="location-wrapper">
+                <div class="location-info">
+                    <h2 class="section-title">Drop By</h2>
+                    <p>Ready for a break? Find us at our classic spot. We are open bright and early every day.</p>
+                    <div class="address-box">
+                        <strong>Abirami Tea Stall</strong><br>
+                        Santhavelur,<br>
+                        Tamil Nadu 602106,<br>
+                        India
+                    </div>
+                    <a href="https://maps.app.goo.gl/odQrS66qaXAgQhRTA" target="_blank" class="btn btn-secondary">Open in Google Maps</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Abirami Tea Stall. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Link to external JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
-y
