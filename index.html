@@ -1,46 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Popup Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cosmic Soundboard | Interactive WebGL Experience</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+  <div id="canvas-container"></div>
 
-    <button class="trigger-btn" id="openModalBtn">Login to your account</button>
+  <main class="ui-layer">
+    <header class="header">
+      <h1>COSMOS</h1>
+      <p>Press any key (A–Z) or click/tap anywhere to trigger sound & visual shockwaves</p>
+    </header>
 
-    <div class="modal-overlay" id="modalOverlay">
-        
-        <div class="login-container" id="loginContainer">
-            <span class="close-btn" id="closeModalBtn">&times;</span>
-            
-            <h2>Welcome Back</h2>
-            <form id="loginForm">
-                <div class="input-group">
-                    <input type="email" id="email" required>
-                    <label for="email">Email Address</label>
-                </div>
-
-                <div class="input-group">
-                    <input type="password" id="password" required>
-                    <label for="password">Password</label>
-                    <span class="toggle-password" id="togglePassword">Show</span>
-                </div>
-
-                <div class="actions">
-                    <label style="cursor: pointer;">
-                        <input type="checkbox" style="margin-right: 5px;"> Remember me
-                    </label>
-                    <a href="#">Forgot Password?</a>
-                </div>
-
-                <button type="submit" class="login-btn" id="loginBtn">Login</button>
-            </form>
-        </div>
+    <div class="controls-panel">
+      <button id="btn-theme" class="ctrl-btn">Cycle Theme</button>
+      <button id="btn-warp" class="ctrl-btn">Toggle Warp Speed</button>
     </div>
 
-    <script src="script.js"></script>
+    <div id="key-display" class="key-indicator">PRESS A KEY</div>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
