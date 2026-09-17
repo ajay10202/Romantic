@@ -2,159 +2,502 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>3D CAD Viewer</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="style.css">
+    <title>My CAD Viewer</title>
+
+    <link rel="stylesheet"
+          href="style.css">
+
 </head>
+
 
 <body>
 
-    <!-- TOP BAR -->
-    <header class="topbar">
 
-        <div class="logo">
-            3D CAD Viewer
-        </div>
+<!-- =====================================
+     HEADER
+===================================== -->
 
-        <label class="file-button">
-            📂 Open Model
-            <input type="file"
-                   id="fileInput"
-                   accept=".stl,.obj">
+<header class="header">
+
+    <div class="brand">
+        <span class="cube">◆</span>
+        My CAD Viewer
+    </div>
+
+
+    <div class="toolbar">
+
+        <label class="toolbar-btn">
+
+            📂 Open
+
+            <input
+                type="file"
+                id="fileInput"
+                multiple
+                accept="
+                    .step,
+                    .stp,
+                    .iges,
+                    .igs,
+                    .stl,
+                    .obj,
+                    .gltf,
+                    .glb
+                "
+            >
+
         </label>
 
-        <button onclick="fitModel()">Fit</button>
 
-        <button onclick="resetView()">Reset</button>
-
-        <button onclick="toggleWireframe()">
-            Wireframe
+        <button id="fitBtn">
+            Fit
         </button>
 
-        <button onclick="toggleFullscreen()">
-            Full Screen
+
+        <button id="homeBtn">
+            Home
         </button>
 
-    </header>
+
+        <button id="measureBtn">
+            📏 Measure
+        </button>
 
 
-    <!-- MAIN AREA -->
-    <main class="main">
-
-        <!-- LEFT SIDEBAR -->
-        <aside class="sidebar">
-
-            <div class="section-title">
-                MEASUREMENT
-            </div>
-
-            <button class="tool"
-                    onclick="startMeasure()">
-                📏 Measure Distance
-            </button>
-
-            <button class="tool"
-                    onclick="clearMeasurement()">
-                ❌ Clear Measurement
-            </button>
+        <button id="wireBtn">
+            ◇ Edges
+        </button>
 
 
-            <div class="section-title">
-                STANDARD VIEWS
-            </div>
+        <button id="fullscreenBtn">
+            ⛶
+        </button>
 
-            <button class="tool"
-                    onclick="setView('front')">
-                Front
-            </button>
+    </div>
 
-            <button class="tool"
-                    onclick="setView('back')">
-                Back
-            </button>
-
-            <button class="tool"
-                    onclick="setView('top')">
-                Top
-            </button>
-
-            <button class="tool"
-                    onclick="setView('bottom')">
-                Bottom
-            </button>
-
-            <button class="tool"
-                    onclick="setView('left')">
-                Left
-            </button>
-
-            <button class="tool"
-                    onclick="setView('right')">
-                Right
-            </button>
-
-            <button class="tool"
-                    onclick="setView('iso')">
-                Isometric
-            </button>
-
-        </aside>
+</header>
 
 
-        <!-- VIEWER -->
-        <section class="viewer">
 
-            <div id="viewer"></div>
+<!-- =====================================
+     MAIN
+===================================== -->
+
+<div class="main">
 
 
-            <!-- MEASUREMENT PANEL -->
-            <div id="measurePanel"
-                 class="measure-panel">
+    <!-- =================================
+         LEFT PANEL
+    ================================== -->
 
-                <h3>📏 Measurement</h3>
+    <aside class="left-panel">
 
-                <p>
-                    Select two points on the model.
-                </p>
 
-                <div id="measureResult"
-                     class="measure-result">
-                    0.00 mm
-                </div>
+        <div class="panel-title">
+            MODEL
+        </div>
 
+
+        <div id="modelName"
+             class="model-name">
+
+            No model loaded
+
+        </div>
+
+
+        <div class="panel-title">
+            FILE
+        </div>
+
+
+        <div class="file-info">
+
+            <div>
+                Format:
+                <span id="fileFormat">
+                    -
+                </span>
             </div>
 
 
-            <!-- STATUS -->
-            <div id="status"
-                 class="status">
-                Ready
+            <div>
+                Size:
+                <span id="fileSize">
+                    -
+                </span>
             </div>
 
-        </section>
-
-    </main>
+        </div>
 
 
-    <!-- THREE.JS -->
-    <script type="importmap">
-    {
-        "imports": {
-            "three":
-            "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-
-            "three/addons/":
-            "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-        }
-    }
-    </script>
+        <div class="panel-title">
+            VIEW
+        </div>
 
 
-    <script type="module"
-            src="script.js"></script>
+        <button class="side-btn"
+                onclick="setView('front')">
+
+            Front
+
+        </button>
+
+
+        <button class="side-btn"
+                onclick="setView('back')">
+
+            Back
+
+        </button>
+
+
+        <button class="side-btn"
+                onclick="setView('top')">
+
+            Top
+
+        </button>
+
+
+        <button class="side-btn"
+                onclick="setView('bottom')">
+
+            Bottom
+
+        </button>
+
+
+        <button class="side-btn"
+                onclick="setView('left')">
+
+            Left
+
+        </button>
+
+
+        <button class="side-btn"
+                onclick="setView('right')">
+
+            Right
+
+        </button>
+
+
+        <button class="side-btn"
+                onclick="setView('iso')">
+
+            Isometric
+
+        </button>
+
+
+        <div class="panel-title">
+            DISPLAY
+        </div>
+
+
+        <button class="side-btn"
+                id="backgroundBtn">
+
+            Background
+
+        </button>
+
+
+        <button class="side-btn"
+                id="axesBtn">
+
+            Axes
+
+        </button>
+
+
+    </aside>
+
+
+
+    <!-- =================================
+         VIEWER
+    ================================== -->
+
+    <section
+        id="viewer"
+        class="viewer">
+
+
+        <!-- DROP AREA -->
+
+        <div id="dropArea"
+             class="drop-area">
+
+            <div class="drop-icon">
+                ◇
+            </div>
+
+            <h2>
+                Drop 3D Model Here
+            </h2>
+
+            <p>
+                STEP · STP · IGES · STL · OBJ · GLTF
+            </p>
+
+            <label class="open-big">
+
+                Open 3D File
+
+                <input
+                    type="file"
+                    id="bigFileInput"
+                    multiple
+                    accept="
+                        .step,
+                        .stp,
+                        .iges,
+                        .igs,
+                        .stl,
+                        .obj,
+                        .gltf,
+                        .glb
+                    "
+                >
+
+            </label>
+
+        </div>
+
+
+        <!-- MEASUREMENT -->
+
+        <div id="measurementBox"
+             class="measurement-box">
+
+            <div class="measurement-title">
+
+                📏 Measurement
+
+                <button id="closeMeasure">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="measurement-content">
+
+                Select two points on the model.
+
+            </div>
+
+
+            <div id="distance"
+                 class="distance">
+
+                0.00 mm
+
+            </div>
+
+        </div>
+
+
+        <!-- LOADING -->
+
+        <div id="loading"
+             class="loading">
+
+            <div class="spinner"></div>
+
+            <div>
+                Loading model...
+            </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div id="status"
+             class="status">
+
+            Ready
+
+        </div>
+
+
+        <!-- VIEW CUBE -->
+
+        <div class="view-cube">
+
+            <div class="cube-face top">
+                TOP
+            </div>
+
+            <div class="cube-face front">
+                FRONT
+            </div>
+
+            <div class="cube-face right">
+                RIGHT
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================
+         RIGHT PANEL
+    ================================== -->
+
+    <aside class="right-panel">
+
+
+        <div class="panel-title">
+            PROPERTIES
+        </div>
+
+
+        <div class="property">
+
+            <span>
+                File
+            </span>
+
+            <strong id="propertyFile">
+                -
+            </strong>
+
+        </div>
+
+
+        <div class="property">
+
+            <span>
+                Format
+            </span>
+
+            <strong id="propertyFormat">
+                -
+            </strong>
+
+        </div>
+
+
+        <div class="property">
+
+            <span>
+                X Size
+            </span>
+
+            <strong id="sizeX">
+                -
+            </strong>
+
+        </div>
+
+
+        <div class="property">
+
+            <span>
+                Y Size
+            </span>
+
+            <strong id="sizeY">
+                -
+            </strong>
+
+        </div>
+
+
+        <div class="property">
+
+            <span>
+                Z Size
+            </span>
+
+            <strong id="sizeZ">
+                -
+            </strong>
+
+        </div>
+
+
+        <div class="property">
+
+            <span>
+                Unit
+            </span>
+
+            <strong>
+                mm
+            </strong>
+
+        </div>
+
+
+        <div class="panel-title">
+            CONTROLS
+        </div>
+
+
+        <div class="controls-help">
+
+            <p>
+                🖱 Left click + drag
+                <br>
+                Rotate
+            </p>
+
+
+            <p>
+                🖱 Right click + drag
+                <br>
+                Pan
+            </p>
+
+
+            <p>
+                🖱 Mouse wheel
+                <br>
+                Zoom
+            </p>
+
+
+            <p>
+                📏 Measure
+                <br>
+                Select two points
+            </p>
+
+        </div>
+
+    </aside>
+
+</div>
+
+
+
+<!-- =====================================
+     ONLINE 3D VIEWER ENGINE
+===================================== -->
+
+<script
+src="https://cdn.jsdelivr.net/npm/online-3d-viewer@0.18.0/build/o3dv.min.js">
+</script>
+
+
+<script src="script.js"></script>
+
 
 </body>
 
