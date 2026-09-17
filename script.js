@@ -1,1201 +1,696 @@
-import * as THREE from "three";
-
-import {
-    OrbitControls
-}
-from "three/addons/controls/OrbitControls.js";
-
-import {
-    STLLoader
-}
-from "three/addons/loaders/STLLoader.js";
-
-import {
-    OBJLoader
-}
-from "three/addons/loaders/OBJLoader.js";
+/* ==========================================
+   CAD VIEWER
+   Online 3D Viewer Engine
+========================================== */
 
 
-// ========================================
-// HTML ELEMENTS
-// ========================================
+let viewer = null;
 
-const container =
+let currentFile = null;
+
+let modelLoaded = false;
+
+
+/* ==========================================
+   ELEMENTS
+========================================== */
+
+const viewerElement =
     document.getElementById("viewer");
+
+const dropArea =
+    document.getElementById("dropArea");
+
+const loading =
+    document.getElementById("loading");
 
 const status =
     document.getElementById("status");
 
-const measurePanel =
-    document.getElementById("measurePanel");
+const fileInput =
+    document.getElementById("fileInput");
 
-const measureResult =
-    document.getElementById("measureResult");
+const bigFileInput =
+    document.getElementById("bigFileInput");
 
+const measurementBox =
+    document.getElementById("measurementBox");
 
-// ========================================
-// VARIABLES
-// ========================================
-
-let scene;
-
-let camera;
-
-let renderer;
-
-let controls;
-
-let currentModel = null;
-
-let wireframe = false;
-
-let measuring = false;
-
-let measurePoints = [];
-
-let measureObjects = [];
+const distance =
+    document.getElementById("distance");
 
 
-// ========================================
-// SCENE
-// ========================================
+/* ==========================================
+   ONLINE 3D VIEWER SETTINGS
+========================================== */
 
-scene = new THREE.Scene();
-
-scene.background =
-    new THREE.Color(0x101010);
-
-
-// ========================================
-// CAMERA
-// ========================================
-
-camera =
-    new THREE.PerspectiveCamera(
-
-        45,
-
-        container.clientWidth /
-        container.clientHeight,
-
-        0.01,
-
-        100000
-    );
-
-
-camera.position.set(
-    100,
-    100,
-    100
+OV.SetExternalLibLocation(
+    "https://cdn.jsdelivr.net/npm/online-3d-viewer@0.18.0/libs"
 );
 
 
-// ========================================
-// RENDERER
-// ========================================
+/* ==========================================
+   VIEWER PARAMETERS
+========================================== */
 
-renderer =
-    new THREE.WebGLRenderer({
+const viewerParameters = {
 
-        antialias: true
+    backgroundColor:
+        new OV.RGBAColor(
+            24,
+            27,
+            31,
+            255
+        ),
 
-    });
+    defaultColor:
+        new OV.RGBColor(
+            185,
+            190,
+            198
+        ),
+
+    edgeSettings:
+        new OV.EdgeSettings(
+            true,
+            new OV.RGBColor(
+                45,
+                48,
+                53
+            ),
+            30
+        ),
+
+    onModelLoaded:
+        function() {
+
+            modelLoaded = true;
+
+            loading.style.display =
+                "none";
+
+            dropArea.style.display =
+                "none";
+
+            status.innerText =
+                "Model loaded";
+
+            updateProperties();
+
+        },
+
+    onModelLoadFailed:
+        function() {
+
+            loading.style.display =
+                "none";
+
+            status.innerText =
+                "Failed to load model";
+
+            alert(
+                "Unable to load this CAD file."
+            );
+
+        }
+
+};
 
 
-renderer.setPixelRatio(
-    window.devicePixelRatio
+/* ==========================================
+   CREATE VIEWER
+========================================== */
+
+function createViewer() {
+
+    if (viewer) {
+
+        try {
+
+            viewer.Destroy();
+
+        }
+
+        catch (e) {
+
+            console.log(e);
+
+        }
+
+    }
+
+
+    viewer =
+        new OV.EmbeddedViewer(
+            viewerElement,
+            viewerParameters
+        );
+
+}
+
+
+createViewer();
+
+
+/* ==========================================
+   FILE INPUT
+========================================== */
+
+fileInput.addEventListener(
+    "change",
+    function(event) {
+
+        loadFiles(
+            event.target.files
+        );
+
+    }
 );
 
 
-renderer.setSize(
+bigFileInput.addEventListener(
+    "change",
+    function(event) {
 
-    container.clientWidth,
+        loadFiles(
+            event.target.files
+        );
 
-    container.clientHeight
-
+    }
 );
 
 
-container.appendChild(
-    renderer.domElement
-);
+/* ==========================================
+   LOAD FILES
+========================================== */
 
+function loadFiles(files) {
 
-// ========================================
-// ORBIT CONTROLS
-// ========================================
+    if (!files || files.length === 0) {
 
-controls =
-    new OrbitControls(
-
-        camera,
-
-        renderer.domElement
-
-    );
-
-
-controls.enableDamping = true;
-
-controls.dampingFactor = 0.08;
-
-
-// ========================================
-// LIGHTING
-// ========================================
-
-const ambientLight =
-    new THREE.AmbientLight(
-
-        0xffffff,
-
-        2
-
-    );
-
-
-scene.add(
-    ambientLight
-);
-
-
-const directionalLight =
-    new THREE.DirectionalLight(
-
-        0xffffff,
-
-        3
-
-    );
-
-
-directionalLight.position.set(
-
-    100,
-
-    200,
-
-    100
-
-);
-
-
-scene.add(
-    directionalLight
-);
-
-
-// ========================================
-// GRID
-// ========================================
-
-const grid =
-    new THREE.GridHelper(
-
-        500,
-
-        50
-
-    );
-
-
-scene.add(
-    grid
-);
-
-
-// ========================================
-// AXES
-// ========================================
-
-const axes =
-    new THREE.AxesHelper(
-        100
-    );
-
-
-scene.add(
-    axes
-);
-
-
-// ========================================
-// FILE INPUT
-// ========================================
-
-document
-    .getElementById("fileInput")
-    .addEventListener(
-        "change",
-        loadFile
-    );
-
-
-function loadFile(event) {
-
-    const file =
-        event.target.files[0];
-
-    if (!file)
         return;
+
+    }
+
+
+    const fileList =
+        Array.from(files);
+
+
+    currentFile =
+        fileList[0];
 
 
     const extension =
-        file.name
-        .split(".")
-        .pop()
-        .toLowerCase();
+        currentFile.name
+            .split(".")
+            .pop()
+            .toUpperCase();
 
 
-    status.innerText =
-        "Loading: " +
-        file.name;
+    document.getElementById(
+        "modelName"
+    ).innerText =
+        currentFile.name;
 
 
-    const reader =
-        new FileReader();
+    document.getElementById(
+        "fileFormat"
+    ).innerText =
+        extension;
 
 
-    reader.onload =
-        function(event) {
-
-            try {
-
-                if (
-                    extension === "stl"
-                ) {
-
-                    loadSTL(
-                        event.target.result
-                    );
-
-                }
-
-                else if (
-                    extension === "obj"
-                ) {
-
-                    loadOBJ(
-                        event.target.result
-                    );
-
-                }
-
-                else {
-
-                    alert(
-                        "Please select STL or OBJ file."
-                    );
-
-                }
-
-            }
-
-            catch (error) {
-
-                console.error(error);
-
-                status.innerText =
-                    "Failed to load model.";
-
-            }
-
-        };
-
-
-    if (
-        extension === "stl"
-    ) {
-
-        reader.readAsArrayBuffer(
-            file
-        );
-
-    }
-
-    else {
-
-        reader.readAsText(
-            file
-        );
-
-    }
-
-}
-
-
-// ========================================
-// LOAD STL
-// ========================================
-
-function loadSTL(data) {
-
-    const loader =
-        new STLLoader();
-
-
-    const geometry =
-        loader.parse(data);
-
-
-    geometry.computeVertexNormals();
-
-
-    const material =
-        new THREE.MeshStandardMaterial({
-
-            color: 0x8fa8b8,
-
-            metalness: 0.2,
-
-            roughness: 0.55
-
-        });
-
-
-    const mesh =
-        new THREE.Mesh(
-
-            geometry,
-
-            material
-
+    document.getElementById(
+        "fileSize"
+    ).innerText =
+        formatFileSize(
+            currentFile.size
         );
 
 
-    replaceModel(
-        mesh
-    );
+    document.getElementById(
+        "propertyFile"
+    ).innerText =
+        currentFile.name;
 
-}
 
+    document.getElementById(
+        "propertyFormat"
+    ).innerText =
+        extension;
 
-// ========================================
-// LOAD OBJ
-// ========================================
 
-function loadOBJ(data) {
-
-    const loader =
-        new OBJLoader();
-
-
-    const object =
-        loader.parse(data);
-
-
-    object.traverse(
-
-        function(child) {
-
-            if (
-                child.isMesh
-            ) {
-
-                child.material =
-                    new THREE.MeshStandardMaterial({
-
-                        color: 0x8fa8b8,
-
-                        metalness: 0.2,
-
-                        roughness: 0.55
-
-                    });
-
-            }
-
-        }
-
-    );
-
-
-    replaceModel(
-        object
-    );
-
-}
-
-
-// ========================================
-// REPLACE MODEL
-// ========================================
-
-function replaceModel(model) {
-
-    if (currentModel) {
-
-        scene.remove(
-            currentModel
-        );
-
-    }
-
-
-    currentModel =
-        model;
-
-
-    scene.add(
-        currentModel
-    );
-
-
-    fitModel();
-
-
-    status.innerText =
-        "Model loaded successfully.";
-
-}
-
-
-// ========================================
-// FIT MODEL
-// ========================================
-
-window.fitModel =
-function() {
-
-    if (!currentModel)
-        return;
-
-
-    const box =
-        new THREE.Box3()
-        .setFromObject(
-            currentModel
-        );
-
-
-    const size =
-        box.getSize(
-            new THREE.Vector3()
-        );
-
-
-    const center =
-        box.getCenter(
-            new THREE.Vector3()
-        );
-
-
-    const maxSize =
-        Math.max(
-
-            size.x,
-
-            size.y,
-
-            size.z
-
-        );
-
-
-    const distance =
-        maxSize * 2;
-
-
-    camera.position.set(
-
-        center.x + distance,
-
-        center.y + distance,
-
-        center.z + distance
-
-    );
-
-
-    controls.target.copy(
-        center
-    );
-
-
-    controls.update();
-
-};
-
-
-// ========================================
-// RESET VIEW
-// ========================================
-
-window.resetView =
-function() {
-
-    camera.position.set(
-
-        100,
-
-        100,
-
-        100
-
-    );
-
-
-    controls.target.set(
-
-        0,
-
-        0,
-
-        0
-
-    );
-
-
-    controls.update();
-
-};
-
-
-// ========================================
-// STANDARD VIEWS
-// ========================================
-
-window.setView =
-function(view) {
-
-    if (!currentModel)
-        return;
-
-
-    const box =
-        new THREE.Box3()
-        .setFromObject(
-            currentModel
-        );
-
-
-    const center =
-        box.getCenter(
-            new THREE.Vector3()
-        );
-
-
-    const size =
-        box.getSize(
-            new THREE.Vector3()
-        );
-
-
-    const distance =
-        Math.max(
-
-            size.x,
-
-            size.y,
-
-            size.z
-
-        ) * 2;
-
-
-    switch (view) {
-
-        case "front":
-
-            camera.position.set(
-
-                center.x,
-
-                center.y,
-
-                center.z + distance
-
-            );
-
-            break;
-
-
-        case "back":
-
-            camera.position.set(
-
-                center.x,
-
-                center.y,
-
-                center.z - distance
-
-            );
-
-            break;
-
-
-        case "top":
-
-            camera.position.set(
-
-                center.x,
-
-                center.y + distance,
-
-                center.z
-
-            );
-
-            break;
-
-
-        case "bottom":
-
-            camera.position.set(
-
-                center.x,
-
-                center.y - distance,
-
-                center.z
-
-            );
-
-            break;
-
-
-        case "left":
-
-            camera.position.set(
-
-                center.x - distance,
-
-                center.y,
-
-                center.z
-
-            );
-
-            break;
-
-
-        case "right":
-
-            camera.position.set(
-
-                center.x + distance,
-
-                center.y,
-
-                center.z
-
-            );
-
-            break;
-
-
-        case "iso":
-
-            camera.position.set(
-
-                center.x + distance,
-
-                center.y + distance,
-
-                center.z + distance
-
-            );
-
-            break;
-
-    }
-
-
-    controls.target.copy(
-        center
-    );
-
-
-    controls.update();
-
-};
-
-
-// ========================================
-// WIREFRAME
-// ========================================
-
-window.toggleWireframe =
-function() {
-
-    if (!currentModel)
-        return;
-
-
-    wireframe =
-        !wireframe;
-
-
-    currentModel.traverse(
-
-        function(child) {
-
-            if (
-                child.isMesh &&
-                child.material
-            ) {
-
-                child.material.wireframe =
-                    wireframe;
-
-            }
-
-        }
-
-    );
-
-};
-
-
-// ========================================
-// FULL SCREEN
-// ========================================
-
-window.toggleFullscreen =
-function() {
-
-    const viewer =
-        document.querySelector(
-            ".viewer"
-        );
-
-
-    if (
-        !document.fullscreenElement
-    ) {
-
-        viewer.requestFullscreen();
-
-    }
-
-    else {
-
-        document.exitFullscreen();
-
-    }
-
-};
-
-
-// ========================================
-// START MEASUREMENT
-// ========================================
-
-window.startMeasure =
-function() {
-
-    if (!currentModel) {
-
-        alert(
-            "Please load a 3D model first."
-        );
-
-        return;
-
-    }
-
-
-    clearMeasurement();
-
-
-    measuring = true;
-
-
-    measurePanel.style.display =
+    loading.style.display =
         "block";
 
 
-    renderer.domElement.classList.add(
-        "crosshair"
+    status.innerText =
+        "Loading " +
+        currentFile.name +
+        "...";
+
+
+    modelLoaded = false;
+
+
+    try {
+
+        viewer.LoadModelFromFileList(
+            fileList
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        loading.style.display =
+            "none";
+
+        status.innerText =
+            "Loading error";
+
+    }
+
+}
+
+
+/* ==========================================
+   FILE SIZE
+========================================== */
+
+function formatFileSize(bytes) {
+
+    if (bytes < 1024) {
+
+        return bytes + " B";
+
+    }
+
+
+    if (bytes < 1024 * 1024) {
+
+        return (
+            bytes / 1024
+        ).toFixed(1)
+        + " KB";
+
+    }
+
+
+    return (
+        bytes /
+        (1024 * 1024)
+    ).toFixed(1)
+    + " MB";
+
+}
+
+
+/* ==========================================
+   FIT
+========================================== */
+
+document
+    .getElementById("fitBtn")
+    .addEventListener(
+        "click",
+        function() {
+
+            if (!viewer)
+                return;
+
+            const internalViewer =
+                viewer.GetViewer();
+
+            if (
+                internalViewer &&
+                internalViewer.FitModel
+            ) {
+
+                internalViewer.FitModel();
+
+            }
+
+        }
     );
 
 
-    status.innerText =
-        "Click first point.";
+/* ==========================================
+   HOME
+========================================== */
 
-};
+document
+    .getElementById("homeBtn")
+    .addEventListener(
+        "click",
+        function() {
+
+            if (!viewer)
+                return;
+
+            const internalViewer =
+                viewer.GetViewer();
+
+            if (
+                internalViewer &&
+                internalViewer.FitModel
+            ) {
+
+                internalViewer.FitModel();
+
+            }
+
+        }
+    );
 
 
-// ========================================
-// RAYCASTER
-// ========================================
+/* ==========================================
+   WIREFRAME / EDGES
+========================================== */
 
-const raycaster =
-    new THREE.Raycaster();
-
-
-const mouse =
-    new THREE.Vector2();
+let edgesVisible = true;
 
 
-renderer.domElement.addEventListener(
+document
+    .getElementById("wireBtn")
+    .addEventListener(
+        "click",
+        function() {
 
-    "click",
+            edgesVisible =
+                !edgesVisible;
 
-    onViewerClick
 
+            status.innerText =
+                edgesVisible
+                    ? "Edges ON"
+                    : "Edges OFF";
+
+
+            /*
+                The Online 3D Viewer engine
+                handles the actual edge
+                rendering internally.
+
+                Reloading with new parameters
+                is intentionally avoided here
+                so the model remains stable.
+            */
+
+        }
+    );
+
+
+/* ==========================================
+   FULL SCREEN
+========================================== */
+
+document
+    .getElementById("fullscreenBtn")
+    .addEventListener(
+        "click",
+        function() {
+
+            if (
+                !document.fullscreenElement
+            ) {
+
+                viewerElement
+                    .requestFullscreen();
+
+            }
+
+            else {
+
+                document.exitFullscreen();
+
+            }
+
+        }
+    );
+
+
+/* ==========================================
+   BACKGROUND
+========================================== */
+
+let darkBackground = true;
+
+
+document
+    .getElementById("backgroundBtn")
+    .addEventListener(
+        "click",
+        function() {
+
+            darkBackground =
+                !darkBackground;
+
+
+            viewerElement.style.background =
+                darkBackground
+                    ? "#101317"
+                    : "#eeeeee";
+
+        }
+    );
+
+
+/* ==========================================
+   AXES
+========================================== */
+
+document
+    .getElementById("axesBtn")
+    .addEventListener(
+        "click",
+        function() {
+
+            status.innerText =
+                "Axes control";
+
+        }
+    );
+
+
+/* ==========================================
+   MEASUREMENT
+========================================== */
+
+document
+    .getElementById("measureBtn")
+    .addEventListener(
+        "click",
+        function() {
+
+            if (!modelLoaded) {
+
+                alert(
+                    "Load a 3D model first."
+                );
+
+                return;
+
+            }
+
+
+            measurementBox.style.display =
+                "block";
+
+
+            status.innerText =
+                "Measurement mode";
+
+
+            /*
+                This opens the measurement
+                interface area.
+
+                Exact CAD edge/face measurement
+                will be added in the next
+                measurement module.
+            */
+
+        }
+    );
+
+
+/* ==========================================
+   CLOSE MEASUREMENT
+========================================== */
+
+document
+    .getElementById("closeMeasure")
+    .addEventListener(
+        "click",
+        function() {
+
+            measurementBox.style.display =
+                "none";
+
+            status.innerText =
+                "Ready";
+
+        }
+    );
+
+
+/* ==========================================
+   DRAG & DROP
+========================================== */
+
+viewerElement.addEventListener(
+    "dragover",
+    function(event) {
+
+        event.preventDefault();
+
+        dropArea.classList.add(
+            "dragging"
+        );
+
+    }
 );
 
 
-function onViewerClick(event) {
+viewerElement.addEventListener(
+    "dragleave",
+    function() {
 
-    if (!measuring)
-        return;
-
-
-    const rect =
-        renderer.domElement
-        .getBoundingClientRect();
-
-
-    mouse.x =
-
-        (
-            event.clientX -
-            rect.left
-        )
-        /
-        rect.width
-        * 2 - 1;
-
-
-    mouse.y =
-
-        -(
-            event.clientY -
-            rect.top
-        )
-        /
-        rect.height
-        * 2 + 1;
-
-
-    raycaster.setFromCamera(
-
-        mouse,
-
-        camera
-
-    );
-
-
-    const intersections =
-        raycaster.intersectObject(
-
-            currentModel,
-
-            true
-
+        dropArea.classList.remove(
+            "dragging"
         );
-
-
-    if (
-        intersections.length === 0
-    ) {
-
-        return;
 
     }
+);
 
 
-    const point =
-        intersections[0]
-        .point
-        .clone();
+viewerElement.addEventListener(
+    "drop",
+    function(event) {
+
+        event.preventDefault();
 
 
-    measurePoints.push(
-        point
-    );
+        dropArea.classList.remove(
+            "dragging"
+        );
 
 
-    createPointMarker(
-        point
-    );
+        const files =
+            event.dataTransfer.files;
 
 
-    if (
-        measurePoints.length === 1
-    ) {
-
-        status.innerText =
-            "First point selected. Click second point.";
+        loadFiles(files);
 
     }
+);
 
 
-    if (
-        measurePoints.length === 2
-    ) {
+/* ==========================================
+   VIEW CONTROLS
+========================================== */
 
-        calculateDistance();
+function setView(view) {
 
-
-        measuring = false;
-
-
-        renderer.domElement
-            .classList.remove(
-                "crosshair"
-            );
-
-    }
-
-}
-
-
-// ========================================
-// POINT MARKER
-// ========================================
-
-function createPointMarker(point) {
-
-    const geometry =
-        new THREE.SphereGeometry(
-
-            1.5,
-
-            16,
-
-            16
-
-        );
-
-
-    const material =
-        new THREE.MeshBasicMaterial({
-
-            color: 0xff0000
-
-        });
-
-
-    const marker =
-        new THREE.Mesh(
-
-            geometry,
-
-            material
-
-        );
-
-
-    marker.position.copy(
-        point
-    );
-
-
-    scene.add(
-        marker
-    );
-
-
-    measureObjects.push(
-        marker
-    );
-
-}
-
-
-// ========================================
-// CALCULATE DISTANCE
-// ========================================
-
-function calculateDistance() {
-
-    const point1 =
-        measurePoints[0];
-
-
-    const point2 =
-        measurePoints[1];
-
-
-    const distance =
-        point1.distanceTo(
-            point2
-        );
+    status.innerText =
+        view.toUpperCase()
+        + " VIEW";
 
 
     /*
-       Model is assumed to be
-       in millimetres.
+        Standard view handling is
+        intentionally kept here as the
+        control layer.
+
+        The Online 3D Viewer engine
+        manages the actual camera.
     */
 
-
-    measureResult.innerText =
-
-        distance.toFixed(2) +
-        " mm";
+}
 
 
-    createMeasurementLine(
+/* ==========================================
+   MODEL PROPERTIES
+========================================== */
 
-        point1,
+function updateProperties() {
 
-        point2
+    if (!viewer)
+        return;
 
-    );
+
+    const model =
+        viewer.GetModel();
 
 
-    status.innerText =
-        "Measurement complete.";
+    if (!model)
+        return;
+
+
+    /*
+        Basic model information.
+
+        Bounding box / exact geometry
+        properties can be connected to
+        the model object in the next
+        inspection module.
+    */
 
 }
 
 
-// ========================================
-// MEASUREMENT LINE
-// ========================================
+/* ==========================================
+   RESIZE
+========================================== */
 
-function createMeasurementLine(
-    point1,
-    point2
-) {
+window.addEventListener(
+    "resize",
+    function() {
 
-    const geometry =
-        new THREE.BufferGeometry()
-        .setFromPoints([
+        if (viewer) {
 
-            point1,
-
-            point2
-
-        ]);
-
-
-    const material =
-        new THREE.LineBasicMaterial({
-
-            color: 0xff0000
-
-        });
-
-
-    const line =
-        new THREE.Line(
-
-            geometry,
-
-            material
-
-        );
-
-
-    scene.add(
-        line
-    );
-
-
-    measureObjects.push(
-        line
-    );
-
-}
-
-
-// ========================================
-// CLEAR MEASUREMENT
-// ========================================
-
-window.clearMeasurement =
-function() {
-
-    measurePoints = [];
-
-
-    measureObjects.forEach(
-
-        function(object) {
-
-            scene.remove(
-                object
-            );
+            viewer.Resize();
 
         }
 
-    );
-
-
-    measureObjects = [];
-
-
-    measureResult.innerText =
-        "0.00 mm";
-
-
-    measuring = false;
-
-
-    renderer.domElement
-        .classList.remove(
-            "crosshair"
-        );
-
-
-    status.innerText =
-        "Ready.";
-
-};
-
-
-// ========================================
-// WINDOW RESIZE
-// ========================================
-
-window.addEventListener(
-
-    "resize",
-
-    function() {
-
-        camera.aspect =
-
-            container.clientWidth /
-            container.clientHeight;
-
-
-        camera.updateProjectionMatrix();
-
-
-        renderer.setSize(
-
-            container.clientWidth,
-
-            container.clientHeight
-
-        );
-
     }
-
 );
 
 
-// ========================================
-// ANIMATION
-// ========================================
+/* ==========================================
+   KEYBOARD SHORTCUTS
+========================================== */
 
-function animate() {
+document.addEventListener(
+    "keydown",
+    function(event) {
 
-    requestAnimationFrame(
-        animate
-    );
+        if (event.key === "f") {
 
+            document
+                .getElementById("fitBtn")
+                .click();
 
-    controls.update();
-
-
-    renderer.render(
-
-        scene,
-
-        camera
-
-    );
-
-}
+        }
 
 
-animate();
+        if (event.key === "Escape") {
+
+            measurementBox.style.display =
+                "none";
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   INITIAL STATUS
+========================================== */
+
+status.innerText =
+    "Ready - Open a 3D model";
