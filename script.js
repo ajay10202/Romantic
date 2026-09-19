@@ -1,238 +1,406 @@
-/* =====================================================
+/* =========================================================
    BLUECHIP BRANCH LOCATOR
-===================================================== */
+   Complete Frontend JavaScript
+   ========================================================= */
+
+"use strict";
+
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
+
+const CONFIG = {
+    DATA_URL: "./data/branches.json",
+
+    ITEMS_PER_PAGE: 12,
+
+    DEFAULT_SORT: "name",
+
+    MAP_PROVIDER: "google",
+
+    ENABLE_GEOLOCATION: true,
+
+    ANIMATION_DELAY: 40,
+
+    SEARCH_DELAY: 250
+};
 
 
-/* =====================================================
-   BRANCH DATA
-=====================================================
+/* =========================================================
+   APPLICATION STATE
+   ========================================================= */
 
-   IMPORTANT:
+const AppState = {
 
-   Keep the existing Bluechip branch data here.
+    branches: [],
 
-   Every record must contain:
+    filteredBranches: [],
 
-   state
-   city
-   area
-   address
-   phone
-   email
+    states: [],
 
-===================================================== */
+    cities: [],
 
-let branches = [
+    currentPage: 1,
 
-    /*
-    Example structure only.
+    searchText: "",
 
-    DO NOT DELETE YOUR EXISTING DATA.
+    selectedState: "",
 
-    Replace/add the complete existing branch
-    database here or load it from JSON/API.
-    */
+    selectedCity: "",
 
-    {
-        state: "ANDHRA PRADESH",
-        city: "BAPATLA",
-        area: "BAPATLA",
-        address: "12-8-27, SURYALANKA ROAD, REVENUE WARD NO. 20, NEAR GADIYARAM CENTRE, BAPATLA BAPATLA 522101",
-        phone: "08643-220375 / 08643-220376",
-        email: "bapatla@bluechipindia.co.in"
-    },
+    selectedView: "grid",
 
-    {
-        state: "ANDHRA PRADESH",
-        city: "BHIMAVARAM",
-        area: "BHIMAVARAM",
-        address: "DOOR NO. 7 - 9, FIRST FLOOR, J P ROAD, CHINAMIRAM, BHIMAVARAM BHIMAVARAM 534204",
-        phone: "08816-293744 / 08816-293755",
-        email: "bhimavaram@bluechipindia.co.in"
-    },
+    sortBy: CONFIG.DEFAULT_SORT,
 
-    {
-        state: "ANDHRA PRADESH",
-        city: "ELURU",
-        area: "ELURU",
-        address: "DOOR NO - 24A-13-1/5, ASHOK NAGAR, REVENUE WARD NO. - 28, OPP. AYUSH HOSPITAL, ELURU ELURU 534002",
-        phone: "08812-240263 / 08812-250263",
-        email: "eluru@bluechipindia.co.in"
-    },
+    userLocation: null,
 
-    {
-        state: "ANDHRA PRADESH",
-        city: "GAJUWAKA",
-        area: "GAJUWAKA",
-        address: "DOOR NO. 7-16-43/1, 1ST FLOOR, ABOVE SBI ATM, PALLA STREET, OLD GAJUWAKA JUNCTION, GAJUWAKA 530026",
-        phone: "0891-2545316 / 0891-2545319",
-        email: "gajuwaka@bluechipindia.co.in"
-    },
+    isLoading: false,
 
-    {
-        state: "ANDHRA PRADESH",
-        city: "GUNTUR",
-        area: "GUNTUR",
-        address: "SRI MATTUPALLI COMPLEX, 1ST FLOOR, D.NO. 6-19-48 & 49, MAIN ROAD, ARUNDELPET, OPP M.R.O OFFICE, GUNTUR 522002",
-        phone: "0863-6632526 / 0863-2240530",
-        email: "guntur@bluechipindia.co.in"
-    },
+    initialized: false
 
-    {
-        state: "DELHI",
-        city: "DELHI",
-        area: "DWARKA",
-        address: "SHOP NO. 108, FIRST FLOOR, AGGARAWAL TOWER, PLOT NO. 2, SECTOR - 5, MLU PLAZA, DWARKA, DELHI 110075",
-        phone: "011-45063550 / 011-49028431",
-        email: "dwarka@bluechipindia.co.in"
-    }
-
-];
+};
 
 
-/* =====================================================
+/* =========================================================
    DOM ELEMENTS
-===================================================== */
+   ========================================================= */
 
-const searchInput =
-    document.getElementById("searchInput");
+const DOM = {};
 
-const clearSearch =
-    document.getElementById("clearSearch");
+function cacheDOM() {
 
-const stateFilter =
-    document.getElementById("stateFilter");
+    DOM.search =
+        document.querySelector("#branchSearch");
 
-const cityFilter =
-    document.getElementById("cityFilter");
+    DOM.state =
+        document.querySelector("#stateFilter");
 
-const branchList =
-    document.getElementById("branchList");
+    DOM.city =
+        document.querySelector("#cityFilter");
 
-const noResults =
-    document.getElementById("noResults");
+    DOM.results =
+        document.querySelector("#branchResults");
 
-const visibleCount =
-    document.getElementById("visibleCount");
+    DOM.pagination =
+        document.querySelector("#pagination");
 
-const branchCount =
-    document.getElementById("branchCount");
+    DOM.resultCount =
+        document.querySelector("#resultCount");
 
-const stateCount =
-    document.getElementById("stateCount");
+    DOM.totalCount =
+        document.querySelector("#totalCount");
 
-const cityCount =
-    document.getElementById("cityCount");
+    DOM.noResults =
+        document.querySelector("#noResults");
 
-const resultTitle =
-    document.getElementById("resultTitle");
+    DOM.loading =
+        document.querySelector("#loading");
 
-const resetFilters =
-    document.getElementById("resetFilters");
+    DOM.sort =
+        document.querySelector("#sortBranches");
 
-const clearFiltersButton =
-    document.getElementById("clearFiltersButton");
+    DOM.gridView =
+        document.querySelector("#gridView");
 
-const nearMeBtn =
-    document.getElementById("nearMeBtn");
+    DOM.listView =
+        document.querySelector("#listView");
 
-const listViewBtn =
-    document.getElementById("listViewBtn");
+    DOM.nearMe =
+        document.querySelector("#nearMe");
 
-const mapViewBtn =
-    document.getElementById("mapViewBtn");
+    DOM.reset =
+        document.querySelector("#resetFilters");
 
-const mapContainer =
-    document.getElementById("mapContainer");
+    DOM.clearSearch =
+        document.querySelector("#clearSearch");
 
+    DOM.searchButton =
+        document.querySelector("#searchButton");
 
-/* =====================================================
-   INITIALIZATION
-===================================================== */
+    DOM.mobileFilter =
+        document.querySelector("#mobileFilterButton");
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        updateStatistics();
-
-        populateStates();
-
-        populateCities();
-
-        renderBranches(branches);
-
-    }
-);
-
-
-/* =====================================================
-   STATISTICS
-===================================================== */
-
-function updateStatistics() {
-
-    branchCount.textContent =
-        branches.length;
-
-    const states =
-        new Set(
-            branches.map(
-                branch =>
-                    branch.state
-            )
-        );
-
-    const cities =
-        new Set(
-            branches.map(
-                branch =>
-                    branch.city
-            )
-        );
-
-    stateCount.textContent =
-        states.size;
-
-    cityCount.textContent =
-        cities.size;
+    DOM.filterPanel =
+        document.querySelector("#filterPanel");
 
 }
 
 
-/* =====================================================
-   STATE DROPDOWN
-===================================================== */
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
 
-function populateStates() {
+document.addEventListener("DOMContentLoaded", initialize);
 
-    const states =
+async function initialize() {
+
+    cacheDOM();
+
+    setupEvents();
+
+    showLoading(true);
+
+    try {
+
+        await loadBranchData();
+
+        normalizeAllBranches();
+
+        buildStateList();
+
+        populateStateFilter();
+
+        updateStatistics();
+
+        applyFilters();
+
+        AppState.initialized = true;
+
+    } catch (error) {
+
+        console.error(
+            "Branch locator initialization failed:",
+            error
+        );
+
+        showError(
+            "Unable to load branch information. Please try again."
+        );
+
+    } finally {
+
+        showLoading(false);
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD DATA
+   ========================================================= */
+
+async function loadBranchData() {
+
+    const response =
+        await fetch(
+            CONFIG.DATA_URL,
+            {
+                method: "GET",
+                cache: "no-cache"
+            }
+        );
+
+    if (!response.ok) {
+
+        throw new Error(
+            `Unable to load ${CONFIG.DATA_URL}`
+        );
+
+    }
+
+    const data =
+        await response.json();
+
+    if (!Array.isArray(data)) {
+
+        throw new Error(
+            "branches.json must contain an array"
+        );
+
+    }
+
+    AppState.branches = data;
+
+}
+
+
+/* =========================================================
+   NORMALIZE DATA
+   ========================================================= */
+
+function normalizeAllBranches() {
+
+    AppState.branches =
+        AppState.branches.map(
+            (branch, index) => {
+
+                return normalizeBranch(
+                    branch,
+                    index
+                );
+
+            }
+        );
+
+}
+
+
+function normalizeBranch(branch, index) {
+
+    return {
+
+        id:
+            branch.id ||
+            `branch-${index + 1}`,
+
+        state:
+            clean(branch.state),
+
+        city:
+            clean(branch.city),
+
+        area:
+            clean(
+                branch.area ||
+                branch.location ||
+                branch.name
+            ),
+
+        name:
+            clean(
+                branch.name ||
+                branch.area ||
+                branch.city
+            ),
+
+        address:
+            clean(
+                branch.address
+            ),
+
+        phone:
+            clean(
+                branch.phone ||
+                branch.mobile
+            ),
+
+        email:
+            clean(
+                branch.email
+            ),
+
+        pincode:
+            clean(
+                branch.pincode
+            ),
+
+        latitude:
+            parseNumber(
+                branch.latitude
+            ),
+
+        longitude:
+            parseNumber(
+                branch.longitude
+            ),
+
+        raw:
+            branch
+
+    };
+
+}
+
+
+/* =========================================================
+   STRING HELPERS
+   ========================================================= */
+
+function clean(value) {
+
+    if (
+        value === undefined ||
+        value === null
+    ) {
+
+        return "";
+
+    }
+
+    return String(value)
+        .replace(/\s+/g, " ")
+        .trim();
+
+}
+
+
+function normalizeSearch(value) {
+
+    return clean(value)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function parseNumber(value) {
+
+    const number =
+        Number.parseFloat(value);
+
+    return Number.isFinite(number)
+        ? number
+        : null;
+
+}
+
+
+/* =========================================================
+   STATE LIST
+   ========================================================= */
+
+function buildStateList() {
+
+    AppState.states =
         [...new Set(
-            branches.map(
-                branch =>
-                    branch.state
-            )
+            AppState.branches
+                .map(branch => branch.state)
+                .filter(Boolean)
         )]
-        .sort();
+        .sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
 
-    stateFilter.innerHTML =
+}
+
+
+/* =========================================================
+   POPULATE STATE FILTER
+   ========================================================= */
+
+function populateStateFilter() {
+
+    if (!DOM.state) return;
+
+    DOM.state.innerHTML =
         `<option value="">All States</option>`;
 
-    states.forEach(
+    AppState.states.forEach(
         state => {
 
             const option =
                 document.createElement("option");
 
-            option.value =
-                state;
+            option.value = state;
 
-            option.textContent =
-                state;
+            option.textContent = state;
 
-            stateFilter.appendChild(
-                option
-            );
+            DOM.state.appendChild(option);
 
         }
     );
@@ -240,39 +408,44 @@ function populateStates() {
 }
 
 
-/* =====================================================
-   CITY DROPDOWN
-===================================================== */
+/* =========================================================
+   CITY FILTER
+   ========================================================= */
 
-function populateCities() {
+function populateCityFilter() {
 
-    const selectedState =
-        stateFilter.value;
+    if (!DOM.city) return;
 
-    let filteredBranches =
-        branches;
+    let branches =
+        AppState.branches;
 
-    if (selectedState) {
+    if (AppState.selectedState) {
 
-        filteredBranches =
+        branches =
             branches.filter(
                 branch =>
-                    branch.state ===
-                    selectedState
+                    normalizeSearch(
+                        branch.state
+                    ) ===
+                    normalizeSearch(
+                        AppState.selectedState
+                    )
             );
 
     }
 
     const cities =
         [...new Set(
-            filteredBranches.map(
-                branch =>
-                    branch.city
-            )
+            branches
+                .map(branch => branch.city)
+                .filter(Boolean)
         )]
-        .sort();
+        .sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
 
-    cityFilter.innerHTML =
+    DOM.city.innerHTML =
         `<option value="">All Cities</option>`;
 
     cities.forEach(
@@ -281,14 +454,62 @@ function populateCities() {
             const option =
                 document.createElement("option");
 
-            option.value =
-                city;
+            option.value = city;
 
-            option.textContent =
-                city;
+            option.textContent = city;
 
-            cityFilter.appendChild(
-                option
+            DOM.city.appendChild(option);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+function searchBranches() {
+
+    const query =
+        normalizeSearch(
+            AppState.searchText
+        );
+
+    if (!query) {
+
+        return AppState.branches;
+
+    }
+
+    return AppState.branches.filter(
+        branch => {
+
+            const searchableText = [
+
+                branch.state,
+
+                branch.city,
+
+                branch.area,
+
+                branch.name,
+
+                branch.address,
+
+                branch.phone,
+
+                branch.email,
+
+                branch.pincode
+
+            ]
+            .map(normalizeSearch)
+            .join(" ");
+
+            return searchableText.includes(
+                query
             );
 
         }
@@ -297,614 +518,1788 @@ function populateCities() {
 }
 
 
-/* =====================================================
+/* =========================================================
    FILTER
-===================================================== */
+   ========================================================= */
 
-function filterBranches() {
+function applyFilters() {
 
-    const search =
-        searchInput.value
-            .trim()
-            .toLowerCase();
+    let results =
+        searchBranches();
 
-    const selectedState =
-        stateFilter.value;
+    if (AppState.selectedState) {
 
-    const selectedCity =
-        cityFilter.value;
+        results =
+            results.filter(
+                branch =>
+                    normalizeSearch(
+                        branch.state
+                    ) ===
+                    normalizeSearch(
+                        AppState.selectedState
+                    )
+            );
 
+    }
 
-    const filtered =
-        branches.filter(
-            branch => {
+    if (AppState.selectedCity) {
 
-                const searchText = (
+        results =
+            results.filter(
+                branch =>
+                    normalizeSearch(
+                        branch.city
+                    ) ===
+                    normalizeSearch(
+                        AppState.selectedCity
+                    )
+            );
 
-                    branch.state +
-                    " " +
-                    branch.city +
-                    " " +
-                    branch.area +
-                    " " +
-                    branch.address +
-                    " " +
-                    branch.phone +
-                    " " +
-                    branch.email
+    }
 
-                ).toLowerCase();
+    results =
+        sortBranches(results);
 
+    AppState.filteredBranches =
+        results;
 
-                const matchesSearch =
-                    !search ||
-                    searchText.includes(
-                        search
-                    );
+    AppState.currentPage = 1;
 
+    renderResults();
 
-                const matchesState =
-                    !selectedState ||
-                    branch.state ===
-                    selectedState;
+    renderPagination();
 
-
-                const matchesCity =
-                    !selectedCity ||
-                    branch.city ===
-                    selectedCity;
-
-
-                return (
-
-                    matchesSearch &&
-                    matchesState &&
-                    matchesCity
-
-                );
-
-            }
-        );
-
-
-    renderBranches(filtered);
+    updateStatistics();
 
 }
 
 
-/* =====================================================
-   RENDER BRANCHES
-===================================================== */
+/* =========================================================
+   SORTING
+   ========================================================= */
 
-function renderBranches(
-    data
-) {
+function sortBranches(branches) {
 
-    branchList.innerHTML = "";
+    const data =
+        [...branches];
 
-    visibleCount.textContent =
-        data.length;
+    switch (AppState.sortBy) {
+
+        case "state":
+
+            return data.sort(
+                (a, b) =>
+                    a.state.localeCompare(
+                        b.state
+                    )
+            );
+
+        case "city":
+
+            return data.sort(
+                (a, b) =>
+                    a.city.localeCompare(
+                        b.city
+                    )
+            );
+
+        case "area":
+
+            return data.sort(
+                (a, b) =>
+                    a.area.localeCompare(
+                        b.area
+                    )
+            );
+
+        case "name":
+
+        default:
+
+            return data.sort(
+                (a, b) =>
+                    a.name.localeCompare(
+                        b.name
+                    )
+            );
+
+    }
+
+}
 
 
-    if (data.length === 0) {
+/* =========================================================
+   RENDER RESULTS
+   ========================================================= */
 
-        branchList.classList.add(
-            "hidden"
+function renderResults() {
+
+    if (!DOM.results) return;
+
+    const total =
+        AppState.filteredBranches.length;
+
+    if (total === 0) {
+
+        DOM.results.innerHTML = "";
+
+        if (DOM.noResults) {
+
+            DOM.noResults.style.display =
+                "block";
+
+        }
+
+        return;
+
+    }
+
+    if (DOM.noResults) {
+
+        DOM.noResults.style.display =
+            "none";
+
+    }
+
+    const start =
+        (
+            AppState.currentPage - 1
+        ) *
+        CONFIG.ITEMS_PER_PAGE;
+
+    const end =
+        start +
+        CONFIG.ITEMS_PER_PAGE;
+
+    const pageData =
+        AppState.filteredBranches.slice(
+            start,
+            end
         );
 
-        noResults.classList.remove(
-            "hidden"
+    DOM.results.innerHTML =
+        pageData
+            .map(
+                (branch, index) =>
+                    createBranchCard(
+                        branch,
+                        index
+                    )
+            )
+            .join("");
+
+    animateCards();
+
+}
+
+
+/* =========================================================
+   BRANCH CARD
+   ========================================================= */
+
+function createBranchCard(
+    branch,
+    index
+) {
+
+    const phoneNumbers =
+        getPhoneNumbers(
+            branch.phone
+        );
+
+    const primaryPhone =
+        phoneNumbers[0] || "";
+
+    const mapsURL =
+        createMapsURL(branch);
+
+    const delay =
+        index *
+        CONFIG.ANIMATION_DELAY;
+
+    return `
+
+        <article
+            class="branch-card"
+            data-id="${escapeHTML(branch.id)}"
+            style="animation-delay:${delay}ms"
+        >
+
+            <div class="branch-card-header">
+
+                <div class="branch-location-icon">
+                    <span>📍</span>
+                </div>
+
+                <div class="branch-heading">
+
+                    <span class="branch-state">
+                        ${escapeHTML(branch.state)}
+                    </span>
+
+                    <h3>
+                        ${escapeHTML(
+                            branch.name
+                        )}
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="branch-details">
+
+                ${
+                    branch.city
+                        ? `
+                        <div class="branch-detail">
+                            <span class="detail-icon">
+                                🏙️
+                            </span>
+
+                            <span>
+                                ${escapeHTML(
+                                    branch.city
+                                )}
+                            </span>
+                        </div>
+                        `
+                        : ""
+                }
+
+
+                ${
+                    branch.area
+                        ? `
+                        <div class="branch-detail">
+                            <span class="detail-icon">
+                                📌
+                            </span>
+
+                            <span>
+                                ${escapeHTML(
+                                    branch.area
+                                )}
+                            </span>
+                        </div>
+                        `
+                        : ""
+                }
+
+
+                ${
+                    branch.address
+                        ? `
+                        <div class="branch-detail address">
+                            <span class="detail-icon">
+                                🏢
+                            </span>
+
+                            <span>
+                                ${escapeHTML(
+                                    branch.address
+                                )}
+                            </span>
+                        </div>
+                        `
+                        : ""
+                }
+
+
+                ${
+                    branch.phone
+                        ? `
+                        <div class="branch-detail">
+                            <span class="detail-icon">
+                                ☎️
+                            </span>
+
+                            <div class="contact-list">
+                                ${
+                                    phoneNumbers
+                                        .map(
+                                            phone => `
+                                            <a
+                                                href="tel:${phone.replace(
+                                                    /[^0-9+]/g,
+                                                    ""
+                                                )}"
+                                            >
+                                                ${escapeHTML(phone)}
+                                            </a>
+                                            `
+                                        )
+                                        .join("")
+                                }
+                            </div>
+                        </div>
+                        `
+                        : ""
+                }
+
+
+                ${
+                    branch.email
+                        ? `
+                        <div class="branch-detail">
+                            <span class="detail-icon">
+                                ✉️
+                            </span>
+
+                            <a
+                                href="mailto:${escapeHTML(
+                                    branch.email
+                                )}"
+                            >
+                                ${escapeHTML(
+                                    branch.email
+                                )}
+                            </a>
+                        </div>
+                        `
+                        : ""
+                }
+
+            </div>
+
+
+            <div class="branch-actions">
+
+                ${
+                    primaryPhone
+                        ? `
+                        <a
+                            class="branch-btn call-btn"
+                            href="tel:${primaryPhone.replace(
+                                /[^0-9+]/g,
+                                ""
+                            )}"
+                        >
+                            <span>☎</span>
+                            Call
+                        </a>
+                        `
+                        : ""
+                }
+
+
+                ${
+                    branch.email
+                        ? `
+                        <a
+                            class="branch-btn email-btn"
+                            href="mailto:${escapeHTML(
+                                branch.email
+                            )}"
+                        >
+                            <span>✉</span>
+                            Email
+                        </a>
+                        `
+                        : ""
+                }
+
+
+                <a
+                    class="branch-btn direction-btn"
+                    href="${mapsURL}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <span>🗺</span>
+                    Directions
+                </a>
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
+
+/* =========================================================
+   PHONE PARSER
+   ========================================================= */
+
+function getPhoneNumbers(phone) {
+
+    if (!phone) return [];
+
+    return phone
+        .split(/[\/,;]+/)
+        .map(
+            item =>
+                item
+                    .replace(/\s+/g, " ")
+                    .trim()
+        )
+        .filter(Boolean);
+
+}
+
+
+/* =========================================================
+   GOOGLE MAPS
+   ========================================================= */
+
+function createMapsURL(branch) {
+
+    if (
+        branch.latitude !== null &&
+        branch.longitude !== null
+    ) {
+
+        return (
+            "https://www.google.com/maps/search/?api=1" +
+            `&query=${branch.latitude},${branch.longitude}`
+        );
+
+    }
+
+    const query = [
+
+        branch.name,
+
+        branch.area,
+
+        branch.address,
+
+        branch.city,
+
+        branch.state,
+
+        branch.pincode,
+
+        "India"
+
+    ]
+    .filter(Boolean)
+    .join(", ");
+   return (
+        "https://www.google.com/maps/search/?api=1" +
+        `&query=${encodeURIComponent(query)}`
+    );
+
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+function renderPagination() {
+
+    if (!DOM.pagination) return;
+
+    const total =
+        AppState.filteredBranches.length;
+
+    const pages =
+        Math.ceil(
+            total /
+            CONFIG.ITEMS_PER_PAGE
+        );
+
+    if (pages <= 1) {
+
+        DOM.pagination.innerHTML = "";
+
+        return;
+
+    }
+
+    let html = "";
+
+    html += `
+        <button
+            class="page-btn"
+            data-page="prev"
+            ${AppState.currentPage === 1
+                ? "disabled"
+                : ""}
+        >
+            ‹
+        </button>
+    `;
+
+
+    const visiblePages =
+        getVisiblePages(
+            AppState.currentPage,
+            pages
+        );
+
+
+    visiblePages.forEach(
+        page => {
+
+            if (page === "...") {
+
+                html += `
+                    <span class="page-dots">
+                        ...
+                    </span>
+                `;
+
+            } else {
+
+                html += `
+                    <button
+                        class="page-btn ${
+                            page ===
+                            AppState.currentPage
+                                ? "active"
+                                : ""
+                        }"
+                        data-page="${page}"
+                    >
+                        ${page}
+                    </button>
+                `;
+
+            }
+
+        }
+    );
+
+
+    html += `
+        <button
+            class="page-btn"
+            data-page="next"
+            ${
+                AppState.currentPage === pages
+                    ? "disabled"
+                    : ""
+            }
+        >
+            ›
+        </button>
+    `;
+
+
+    DOM.pagination.innerHTML =
+        html;
+
+}
+
+
+function getVisiblePages(
+    current,
+    total
+) {
+
+    if (total <= 7) {
+
+        return Array.from(
+            {
+                length: total
+            },
+            (_, i) => i + 1
+        );
+
+    }
+
+    const pages = [1];
+
+    if (current > 4) {
+
+        pages.push("...");
+
+    }
+
+    const start =
+        Math.max(
+            2,
+            current - 1
+        );
+
+    const end =
+        Math.min(
+            total - 1,
+            current + 1
+        );
+
+    for (
+        let i = start;
+        i <= end;
+        i++
+    ) {
+
+        pages.push(i);
+
+    }
+
+    if (current < total - 3) {
+
+        pages.push("...");
+
+    }
+
+    pages.push(total);
+
+    return pages;
+
+}
+
+
+function changePage(page) {
+
+    const totalPages =
+        Math.ceil(
+            AppState.filteredBranches.length /
+            CONFIG.ITEMS_PER_PAGE
+        );
+
+    if (page === "prev") {
+
+        page =
+            AppState.currentPage - 1;
+
+    }
+
+    if (page === "next") {
+
+        page =
+            AppState.currentPage + 1;
+
+    }
+
+    page =
+        Number(page);
+
+    if (
+        page < 1 ||
+        page > totalPages
+    ) {
+
+        return;
+
+    }
+
+    AppState.currentPage =
+        page;
+
+    renderResults();
+
+    renderPagination();
+
+    scrollToResults();
+
+}
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+function updateStatistics() {
+
+    const total =
+        AppState.branches.length;
+
+    const filtered =
+        AppState.filteredBranches.length;
+
+    if (DOM.totalCount) {
+
+        DOM.totalCount.textContent =
+            total.toLocaleString("en-IN");
+
+    }
+
+    if (DOM.resultCount) {
+
+        DOM.resultCount.textContent =
+            filtered.toLocaleString("en-IN");
+
+    }
+
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+function resetFilters() {
+
+    AppState.searchText = "";
+
+    AppState.selectedState = "";
+
+    AppState.selectedCity = "";
+
+    AppState.sortBy =
+        CONFIG.DEFAULT_SORT;
+
+    AppState.currentPage = 1;
+
+    if (DOM.search) {
+
+        DOM.search.value = "";
+
+    }
+
+    if (DOM.state) {
+
+        DOM.state.value = "";
+
+    }
+
+    if (DOM.city) {
+
+        DOM.city.innerHTML =
+            `<option value="">
+                All Cities
+            </option>`;
+
+    }
+
+    if (DOM.sort) {
+
+        DOM.sort.value =
+            CONFIG.DEFAULT_SORT;
+
+    }
+
+    populateCityFilter();
+
+    applyFilters();
+
+}
+/* =========================================================
+   NEAR ME
+   ========================================================= */
+
+function findNearestBranches() {
+
+    if (!CONFIG.ENABLE_GEOLOCATION) {
+
+        return;
+
+    }
+
+    if (!navigator.geolocation) {
+
+        showNotification(
+            "Location is not supported by your browser."
         );
 
         return;
 
     }
 
-
-    branchList.classList.remove(
-        "hidden"
+    showNotification(
+        "Finding branches near you..."
     );
 
-    noResults.classList.add(
-        "hidden"
+    navigator.geolocation.getCurrentPosition(
+
+        position => {
+
+            AppState.userLocation = {
+
+                latitude:
+                    position.coords.latitude,
+
+                longitude:
+                    position.coords.longitude
+
+            };
+
+            calculateDistances();
+
+            AppState.filteredBranches =
+                [...AppState.branches]
+                    .filter(
+                        branch =>
+                            branch.latitude !== null &&
+                            branch.longitude !== null
+                    )
+                    .sort(
+                        (a, b) =>
+                            a.distance -
+                            b.distance
+                    );
+
+            AppState.currentPage = 1;
+
+            renderResults();
+
+            renderPagination();
+
+            updateStatistics();
+
+            showNotification(
+                "Branches sorted by distance."
+            );
+
+        },
+
+        error => {
+
+            console.error(
+                "Geolocation error:",
+                error
+            );
+
+            showNotification(
+                "Please allow location access to find nearby branches."
+            );
+
+        },
+
+        {
+
+            enableHighAccuracy: true,
+
+            timeout: 10000,
+
+            maximumAge: 300000
+
+        }
+
     );
 
+}
 
-    data.forEach(
+
+/* =========================================================
+   DISTANCE CALCULATION
+   ========================================================= */
+
+function calculateDistances() {
+
+    if (!AppState.userLocation) {
+
+        return;
+
+    }
+
+    AppState.branches.forEach(
         branch => {
 
-            const card =
-                createBranchCard(
-                    branch
+            if (
+                branch.latitude === null ||
+                branch.longitude === null
+            ) {
+
+                branch.distance =
+                    Infinity;
+
+                return;
+
+            }
+
+            branch.distance =
+                haversineDistance(
+
+                    AppState.userLocation.latitude,
+
+                    AppState.userLocation.longitude,
+
+                    branch.latitude,
+
+                    branch.longitude
+
                 );
 
-            branchList.appendChild(
-                card
+        }
+    );
+
+}
+/* =========================================================
+   HAVERSINE
+   ========================================================= */
+
+function haversineDistance(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
+
+    const earthRadius = 6371;
+
+    const dLat =
+        degreesToRadians(
+            lat2 - lat1
+        );
+
+    const dLon =
+        degreesToRadians(
+            lon2 - lon1
+        );
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+
+        Math.cos(
+            degreesToRadians(lat1)
+        ) *
+
+        Math.cos(
+            degreesToRadians(lat2)
+        ) *
+
+        Math.sin(dLon / 2) ** 2;
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+
+    return earthRadius * c;
+
+}
+
+
+function degreesToRadians(
+    degrees
+) {
+
+    return degrees *
+        Math.PI /
+        180;
+
+}
+/* =========================================================
+   VIEW SWITCHING
+   ========================================================= */
+
+function setView(view) {
+
+    if (
+        view !== "grid" &&
+        view !== "list"
+    ) {
+
+        return;
+
+    }
+
+    AppState.selectedView =
+        view;
+
+    if (DOM.results) {
+
+        DOM.results.classList.toggle(
+            "list-view",
+            view === "list"
+        );
+
+        DOM.results.classList.toggle(
+            "grid-view",
+            view === "grid"
+        );
+
+    }
+
+    if (DOM.gridView) {
+
+        DOM.gridView.classList.toggle(
+            "active",
+            view === "grid"
+        );
+
+    }
+
+    if (DOM.listView) {
+
+        DOM.listView.classList.toggle(
+            "active",
+            view === "list"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   EVENT HANDLERS
+   ========================================================= */
+
+function setupEvents() {
+
+
+    /* SEARCH */
+
+    if (DOM.search) {
+
+        let searchTimer;
+
+        DOM.search.addEventListener(
+            "input",
+            event => {
+
+                clearTimeout(
+                    searchTimer
+                );
+
+                searchTimer =
+                    setTimeout(
+                        () => {
+
+                            AppState.searchText =
+                                event.target.value;
+
+                            applyFilters();
+
+                        },
+                        CONFIG.SEARCH_DELAY
+                    );
+
+            }
+        );
+
+    }
+
+
+    /* SEARCH BUTTON */
+
+    if (DOM.searchButton) {
+
+        DOM.searchButton.addEventListener(
+            "click",
+            () => {
+
+                if (DOM.search) {
+
+                    AppState.searchText =
+                        DOM.search.value;
+
+                }
+
+                applyFilters();
+
+            }
+        );
+
+    }
+
+
+    /* STATE */
+
+    if (DOM.state) {
+
+        DOM.state.addEventListener(
+            "change",
+            event => {
+
+                AppState.selectedState =
+                    event.target.value;
+
+                AppState.selectedCity =
+                    "";
+
+                populateCityFilter();
+
+                applyFilters();
+
+            }
+        );
+
+    }
+
+
+    /* CITY */
+
+    if (DOM.city) {
+
+        DOM.city.addEventListener(
+            "change",
+            event => {
+
+                AppState.selectedCity =
+                    event.target.value;
+
+                applyFilters();
+
+            }
+        );
+
+    }
+
+
+    /* SORT */
+
+    if (DOM.sort) {
+
+        DOM.sort.addEventListener(
+            "change",
+            event => {
+
+                AppState.sortBy =
+                    event.target.value;
+
+                applyFilters();
+
+            }
+        );
+
+    }
+
+
+    /* RESET */
+
+    if (DOM.reset) {
+
+        DOM.reset.addEventListener(
+            "click",
+            resetFilters
+        );
+
+    }
+   /* CLEAR SEARCH */
+
+    if (DOM.clearSearch) {
+
+        DOM.clearSearch.addEventListener(
+            "click",
+            () => {
+
+                if (DOM.search) {
+
+                    DOM.search.value = "";
+
+                }
+
+                AppState.searchText =
+                    "";
+
+                applyFilters();
+
+            }
+        );
+
+    }
+
+
+    /* NEAR ME */
+
+    if (DOM.nearMe) {
+
+        DOM.nearMe.addEventListener(
+            "click",
+            findNearestBranches
+        );
+
+    }
+
+
+    /* GRID VIEW */
+
+    if (DOM.gridView) {
+
+        DOM.gridView.addEventListener(
+            "click",
+            () =>
+                setView("grid")
+        );
+
+    }
+
+
+    /* LIST VIEW */
+
+    if (DOM.listView) {
+
+        DOM.listView.addEventListener(
+            "click",
+            () =>
+                setView("list")
+        );
+
+    }
+
+
+    /* PAGINATION */
+
+    if (DOM.pagination) {
+
+        DOM.pagination.addEventListener(
+            "click",
+            event => {
+
+                const button =
+                    event.target.closest(
+                        "[data-page]"
+                    );
+
+                if (!button) return;
+
+                changePage(
+                    button.dataset.page
+                );
+
+            }
+        );
+
+    }
+
+
+    /* MOBILE FILTER */
+
+    if (
+        DOM.mobileFilter &&
+        DOM.filterPanel
+    ) {
+
+        DOM.mobileFilter.addEventListener(
+            "click",
+            () => {
+
+                DOM.filterPanel.classList.toggle(
+                    "open"
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ESCAPE KEY */
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Escape" &&
+                DOM.filterPanel
+            ) {
+
+                DOM.filterPanel.classList.remove(
+                    "open"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+function animateCards() {
+
+    const cards =
+        document.querySelectorAll(
+            ".branch-card"
+        );
+
+    cards.forEach(
+        (card, index) => {
+
+            card.style.opacity = "0";
+
+            card.style.transform =
+                "translateY(15px)";
+
+            setTimeout(
+                () => {
+
+                    card.style.transition =
+                        "opacity .35s ease, transform .35s ease";
+
+                    card.style.opacity =
+                        "1";
+
+                    card.style.transform =
+                        "translateY(0)";
+
+                },
+                index *
+                CONFIG.ANIMATION_DELAY
             );
 
         }
     );
 
+}
 
-    updateResultTitle(data);
+
+/* =========================================================
+   SCROLL
+   ========================================================= */
+
+function scrollToResults() {
+
+    if (!DOM.results) return;
+
+    const top =
+        DOM.results.getBoundingClientRect()
+            .top +
+        window.scrollY -
+        100;
+
+    window.scrollTo({
+
+        top,
+
+        behavior: "smooth"
+
+    });
 
 }
 
 
-/* =====================================================
-   BRANCH CARD
-===================================================== */
+/* =========================================================
+   LOADING
+   ========================================================= */
 
-function createBranchCard(
-    branch
-) {
+function showLoading(show) {
 
-    const card =
-        document.createElement(
-            "article"
-        );
+    AppState.isLoading =
+        show;
 
-    card.className =
-        "branch-card";
+    if (!DOM.loading) return;
 
+    DOM.loading.style.display =
+        show
+            ? "flex"
+            : "none";
 
-    const encodedAddress =
-        encodeURIComponent(
-            branch.address
-        );
+}
 
 
-    const phoneNumber =
-        branch.phone
-            .replace(
-                /[^0-9+]/g,
-                ""
-            );
+/* =========================================================
+   ERROR
+   ========================================================= */
 
+function showError(message) {
 
-    card.innerHTML = `
+    if (!DOM.results) return;
 
-        <div class="branch-top">
+    DOM.results.innerHTML = `
 
-            <div>
+        <div class="branch-error">
 
-                <div class="branch-area">
-
-                    ${escapeHTML(
-                        branch.area
-                    )}
-
-                </div>
-
-                <div class="branch-location">
-
-                    ${escapeHTML(
-                        branch.city
-                    )}
-                    ,
-                    ${escapeHTML(
-                        branch.state
-                    )}
-
-                </div>
-
+            <div class="error-icon">
+                ⚠️
             </div>
 
+            <h3>
+                Something went wrong
+            </h3>
 
-            <div class="branch-icon">
+            <p>
+                ${escapeHTML(message)}
+            </p>
 
-                <i class="fa-solid fa-building"></i>
-
-            </div>
-
-        </div>
-
-
-        <div class="branch-info">
-
-            <div class="info-row">
-
-                <i class="fa-solid fa-location-dot"></i>
-
-                <span>
-
-                    ${escapeHTML(
-                        branch.address
-                    )}
-
-                </span>
-
-            </div>
-
-
-            <div class="info-row">
-
-                <i class="fa-solid fa-phone"></i>
-
-                <a href="tel:${phoneNumber}">
-
-                    ${escapeHTML(
-                        branch.phone
-                    )}
-
-                </a>
-
-            </div>
-
-
-            <div class="info-row">
-
-                <i class="fa-solid fa-envelope"></i>
-
-                <a href="mailto:${branch.email}">
-
-                    ${escapeHTML(
-                        branch.email
-                    )}
-
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <div class="branch-actions">
-
-            <a
-                href="tel:${phoneNumber}"
-                class="branch-button call-button">
-
-                <i class="fa-solid fa-phone"></i>
-
-                Call Branch
-
-            </a>
-
-
-            <a
-                href="https://www.google.com/maps/search/?api=1&query=${encodedAddress}"
-                target="_blank"
-                rel="noopener"
-                class="branch-button direction-button">
-
-                <i class="fa-solid fa-diamond-turn-right"></i>
-
-                Directions
-
-            </a>
+            <button
+                onclick="location.reload()"
+            >
+                Try Again
+            </button>
 
         </div>
 
     `;
 
-
-    return card;
-
 }
+/* =========================================================
+   NOTIFICATION
+   ========================================================= */
 
+function showNotification(message) {
 
-/* =====================================================
-   RESULT TITLE
-===================================================== */
+    let notification =
+        document.querySelector(
+            "#branchNotification"
+        );
 
-function updateResultTitle(
-    data
-) {
+    if (!notification) {
 
-    if (
-        stateFilter.value &&
-        cityFilter.value
-    ) {
+        notification =
+            document.createElement(
+                "div"
+            );
 
-        resultTitle.textContent =
-            `${cityFilter.value} Branches`;
+        notification.id =
+            "branchNotification";
 
-        return;
+        notification.className =
+            "branch-notification";
 
-    }
-
-
-    if (stateFilter.value) {
-
-        resultTitle.textContent =
-            `${stateFilter.value} Branches`;
-
-        return;
+        document.body.appendChild(
+            notification
+        );
 
     }
 
+    notification.textContent =
+        message;
 
-    resultTitle.textContent =
-        "All Branches";
-
-}
-
-
-/* =====================================================
-   SEARCH
-===================================================== */
-
-searchInput.addEventListener(
-    "input",
-    () => {
-
-        filterBranches();
-
-    }
-);
-
-
-/* =====================================================
-   STATE CHANGE
-===================================================== */
-
-stateFilter.addEventListener(
-    "change",
-    () => {
-
-        populateCities();
-
-        cityFilter.value = "";
-
-        filterBranches();
-
-    }
-);
-
-
-/* =====================================================
-   CITY CHANGE
-===================================================== */
-
-cityFilter.addEventListener(
-    "change",
-    () => {
-
-        filterBranches();
-
-    }
-);
-
-
-/* =====================================================
-   CLEAR SEARCH
-===================================================== */
-
-clearSearch.addEventListener(
-    "click",
-    () => {
-
-        searchInput.value = "";
-
-        filterBranches();
-
-        searchInput.focus();
-
-    }
-);
-
-
-/* =====================================================
-   RESET
-===================================================== */
-
-function resetAllFilters() {
-
-    searchInput.value = "";
-
-    stateFilter.value = "";
-
-    populateCities();
-
-    cityFilter.value = "";
-
-    renderBranches(
-        branches
+    notification.classList.add(
+        "show"
     );
 
+    clearTimeout(
+        notification._timer
+    );
+
+    notification._timer =
+        setTimeout(
+            () => {
+
+                notification.classList.remove(
+                    "show"
+                );
+
+            },
+            3000
+        );
+
 }
 
 
-resetFilters.addEventListener(
-    "click",
-    resetAllFilters
-);
+/* =========================================================
+   PUBLIC SEARCH API
+   ========================================================= */
+
+window.BluechipLocator = {
+
+    search(query) {
+
+        AppState.searchText =
+            query || "";
+
+        if (DOM.search) {
+
+            DOM.search.value =
+                AppState.searchText;
+
+        }
+
+        applyFilters();
+
+    },
 
 
-clearFiltersButton.addEventListener(
-    "click",
-    resetAllFilters
-);
+    filterState(state) {
+
+        AppState.selectedState =
+            state || "";
+
+        if (DOM.state) {
+
+            DOM.state.value =
+                AppState.selectedState;
+
+        }
+
+        populateCityFilter();
+
+        applyFilters();
+
+    },
 
 
-/* =====================================================
-   LIST VIEW
-===================================================== */
+    filterCity(city) {
 
-listViewBtn.addEventListener(
-    "click",
-    () => {
+        AppState.selectedCity =
+            city || "";
 
-        listViewBtn.classList.add(
-            "active"
-        );
+        if (DOM.city) {
 
-        mapViewBtn.classList.remove(
-            "active"
-        );
+            DOM.city.value =
+                AppState.selectedCity;
 
-        branchList.classList.remove(
-            "hidden"
-        );
+        }
 
-        mapContainer.classList.add(
-            "hidden"
-        );
+        applyFilters();
+
+    },
+
+
+    reset() {
+
+        resetFilters();
+
+    },
+
+
+    nearMe() {
+
+        findNearestBranches();
+
+    },
+
+
+    setView(view) {
+
+        setView(view);
+
+    },
+
+
+    getAllBranches() {
+
+        return [
+            ...AppState.branches
+        ];
+
+    },
+
+
+    getFilteredBranches() {
+
+        return [
+            ...AppState.filteredBranches
+        ];
+
+    },
+
+
+    getStates() {
+
+        return [
+            ...AppState.states
+        ];
 
     }
-);
+
+};
 
 
-/* =====================================================
-   MAP VIEW
-===================================================== */
+/* =========================================================
+   KEYBOARD SHORTCUTS
+   ========================================================= */
 
-mapViewBtn.addEventListener(
-    "click",
-    () => {
+document.addEventListener(
+    "keydown",
+    event => {
 
-        mapViewBtn.classList.add(
-            "active"
-        );
-
-        listViewBtn.classList.remove(
-            "active"
-        );
-
-        branchList.classList.add(
-            "hidden"
-        );
-
-        mapContainer.classList.remove(
-            "hidden"
-        );
-
-    }
-);
-
-
-/* =====================================================
-   NEAR ME
-===================================================== */
-
-nearMeBtn.addEventListener(
-    "click",
-    () => {
+        /* Ctrl + K */
 
         if (
-            !navigator.geolocation
+            event.ctrlKey &&
+            event.key.toLowerCase() === "k"
         ) {
 
-            alert(
-                "Location services are not supported by this browser."
-            );
+            event.preventDefault();
+
+            if (DOM.search) {
+
+                DOM.search.focus();
+
+            }
+
+        }
+
+
+        /* "/" */
+
+        if (
+            event.key === "/" &&
+            document.activeElement.tagName !==
+                "INPUT" &&
+            document.activeElement.tagName !==
+                "TEXTAREA"
+        ) {
+
+            event.preventDefault();
+
+            if (DOM.search) {
+
+                DOM.search.focus();
+               }
+
+        }
+
+    }
+);
+
+/* =========================================================
+   AUTO CLOSE MOBILE FILTER
+   ========================================================= */
+
+document.addEventListener(
+    "click",
+    event => {
+
+        if (
+            !DOM.filterPanel ||
+            !DOM.mobileFilter
+        ) {
 
             return;
 
         }
 
+        if (
+            !DOM.filterPanel.contains(
+                event.target
+            ) &&
+            !DOM.mobileFilter.contains(
+                event.target
+            )
+        ) {
 
-        nearMeBtn.innerHTML = `
+            DOM.filterPanel.classList.remove(
+                "open"
+            );
 
-            <i class="fa-solid fa-spinner fa-spin"></i>
-
-            Finding...
-
-        `;
-
-
-        navigator.geolocation.getCurrentPosition(
-
-            position => {
-
-                const lat =
-                    position.coords.latitude;
-
-                const lng =
-                    position.coords.longitude;
-
-
-                /*
-                    For actual nearest-branch
-                    calculation, add latitude
-                    and longitude to every branch.
-
-                    Example:
-
-                    latitude: 19.0760,
-                    longitude: 72.8777
-                */
-
-
-                const mapsURL =
-                    `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-
-
-                window.open(
-                    mapsURL,
-                    "_blank"
-                );
-
-
-                nearMeBtn.innerHTML = `
-
-                    <i class="fa-solid fa-location-crosshairs"></i>
-
-                    Find Near Me
-
-                `;
-
-            },
-
-            error => {
-
-                alert(
-                    "Unable to access your location. Please allow location permission."
-                );
-
-
-                nearMeBtn.innerHTML = `
-
-                    <i class="fa-solid fa-location-crosshairs"></i>
-
-                    Find Near Me
-
-                `;
-
-            }
-
-        );
+        }
 
     }
 );
 
 
-/* =====================================================
-   HTML ESCAPE
-===================================================== */
+/* =========================================================
+   HANDLE BROWSER BACK/FORWARD
+   ========================================================= */
 
-function escapeHTML(
-    value
-) {
+window.addEventListener(
+    "popstate",
+    () => {
 
-    if (!value) {
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
 
-        return "";
+        AppState.searchText =
+            params.get("search") || "";
+
+        AppState.selectedState =
+            params.get("state") || "";
+
+        AppState.selectedCity =
+            params.get("city") || "";
+
+        if (DOM.search) {
+
+            DOM.search.value =
+                AppState.searchText;
+
+        }
+
+        if (DOM.state) {
+
+            DOM.state.value =
+                AppState.selectedState;
+
+        }
+
+        populateCityFilter();
+
+        if (DOM.city) {
+
+            DOM.city.value =
+                AppState.selectedCity;
+
+        }
+
+        applyFilters();
+
+    }
+);
+
+
+/* =========================================================
+   URL FILTER SUPPORT
+   ========================================================= */
+
+function updateURL() {
+
+    if (!window.history) return;
+
+    const params =
+        new URLSearchParams();
+
+    if (AppState.searchText) {
+
+        params.set(
+            "search",
+            AppState.searchText
+        );
 
     }
 
+    if (AppState.selectedState) {
 
-    return String(value)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
+        params.set(
+            "state",
+            AppState.selectedState
         );
 
+    }
+
+    if (AppState.selectedCity) {
+
+        params.set(
+            "city",
+            AppState.selectedCity
+        );
+
+    }
+
+    const query =
+        params.toString();
+
+    const url =
+        query
+            ? `${location.pathname}?${query}`
+            : location.pathname;
+
+    history.replaceState(
+        {},
+        "",
+        url
+    );
+
 }
+/* =========================================================
+   OVERRIDE APPLY FILTERS
+   ========================================================= */
+
+const originalApplyFilters =
+    applyFilters;
+
+applyFilters = function () {
+
+    originalApplyFilters();
+
+    updateURL();
+
+};
+
+
+/* =========================================================
+   EXPORT
+   ========================================================= */
+
+window.BluechipBranchLocator = {
+
+    version: "1.0.0",
+
+    state: AppState,
+
+    config: CONFIG,
+
+    search:
+        window.BluechipLocator.search,
+
+    reset:
+        window.BluechipLocator.reset,
+
+    nearMe:
+        window.BluechipLocator.nearMe
+
+};
+
+
+/* =========================================================
+   END
+   ========================================================= */
