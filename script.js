@@ -1,345 +1,622 @@
 /* =====================================================
-   GLOBAL
+   BLUECHIP BRANCH LOCATOR
 ===================================================== */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-:root {
+/* =====================================================
+   BRANCH DATA
+=====================================================
 
-    --primary: #092f87;
-    --primary-dark: #061f5c;
-    --secondary: #e91d2d;
+   IMPORTANT:
 
-    --text: #172033;
-    --muted: #6b7280;
+   Keep the existing Bluechip branch data here.
 
-    --background: #f5f7fb;
-    --white: #ffffff;
+   Every record must contain:
 
-    --border: #e5e7eb;
+   state
+   city
+   area
+   address
+   phone
+   email
 
-    --shadow:
-        0 15px 40px rgba(10, 40, 90, 0.08);
+===================================================== */
 
-}
+let branches = [
 
-html {
-    scroll-behavior: smooth;
-}
+    /*
+    Example structure only.
 
-body {
+    DO NOT DELETE YOUR EXISTING DATA.
 
-    font-family: "Inter", sans-serif;
+    Replace/add the complete existing branch
+    database here or load it from JSON/API.
+    */
 
-    background:
-        var(--background);
+    {
+        state: "ANDHRA PRADESH",
+        city: "BAPATLA",
+        area: "BAPATLA",
+        address: "12-8-27, SURYALANKA ROAD, REVENUE WARD NO. 20, NEAR GADIYARAM CENTRE, BAPATLA BAPATLA 522101",
+        phone: "08643-220375 / 08643-220376",
+        email: "bapatla@bluechipindia.co.in"
+    },
 
-    color:
-        var(--text);
+    {
+        state: "ANDHRA PRADESH",
+        city: "BHIMAVARAM",
+        area: "BHIMAVARAM",
+        address: "DOOR NO. 7 - 9, FIRST FLOOR, J P ROAD, CHINAMIRAM, BHIMAVARAM BHIMAVARAM 534204",
+        phone: "08816-293744 / 08816-293755",
+        email: "bhimavaram@bluechipindia.co.in"
+    },
+
+    {
+        state: "ANDHRA PRADESH",
+        city: "ELURU",
+        area: "ELURU",
+        address: "DOOR NO - 24A-13-1/5, ASHOK NAGAR, REVENUE WARD NO. - 28, OPP. AYUSH HOSPITAL, ELURU ELURU 534002",
+        phone: "08812-240263 / 08812-250263",
+        email: "eluru@bluechipindia.co.in"
+    },
+
+    {
+        state: "ANDHRA PRADESH",
+        city: "GAJUWAKA",
+        area: "GAJUWAKA",
+        address: "DOOR NO. 7-16-43/1, 1ST FLOOR, ABOVE SBI ATM, PALLA STREET, OLD GAJUWAKA JUNCTION, GAJUWAKA 530026",
+        phone: "0891-2545316 / 0891-2545319",
+        email: "gajuwaka@bluechipindia.co.in"
+    },
+
+    {
+        state: "ANDHRA PRADESH",
+        city: "GUNTUR",
+        area: "GUNTUR",
+        address: "SRI MATTUPALLI COMPLEX, 1ST FLOOR, D.NO. 6-19-48 & 49, MAIN ROAD, ARUNDELPET, OPP M.R.O OFFICE, GUNTUR 522002",
+        phone: "0863-6632526 / 0863-2240530",
+        email: "guntur@bluechipindia.co.in"
+    },
+
+    {
+        state: "DELHI",
+        city: "DELHI",
+        area: "DWARKA",
+        address: "SHOP NO. 108, FIRST FLOOR, AGGARAWAL TOWER, PLOT NO. 2, SECTOR - 5, MLU PLAZA, DWARKA, DELHI 110075",
+        phone: "011-45063550 / 011-49028431",
+        email: "dwarka@bluechipindia.co.in"
+    }
+
+];
+
+
+/* =====================================================
+   DOM ELEMENTS
+===================================================== */
+
+const searchInput =
+    document.getElementById("searchInput");
+
+const clearSearch =
+    document.getElementById("clearSearch");
+
+const stateFilter =
+    document.getElementById("stateFilter");
+
+const cityFilter =
+    document.getElementById("cityFilter");
+
+const branchList =
+    document.getElementById("branchList");
+
+const noResults =
+    document.getElementById("noResults");
+
+const visibleCount =
+    document.getElementById("visibleCount");
+
+const branchCount =
+    document.getElementById("branchCount");
+
+const stateCount =
+    document.getElementById("stateCount");
+
+const cityCount =
+    document.getElementById("cityCount");
+
+const resultTitle =
+    document.getElementById("resultTitle");
+
+const resetFilters =
+    document.getElementById("resetFilters");
+
+const clearFiltersButton =
+    document.getElementById("clearFiltersButton");
+
+const nearMeBtn =
+    document.getElementById("nearMeBtn");
+
+const listViewBtn =
+    document.getElementById("listViewBtn");
+
+const mapViewBtn =
+    document.getElementById("mapViewBtn");
+
+const mapContainer =
+    document.getElementById("mapContainer");
+
+
+/* =====================================================
+   INITIALIZATION
+===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        updateStatistics();
+
+        populateStates();
+
+        populateCities();
+
+        renderBranches(branches);
+
+    }
+);
+
+
+/* =====================================================
+   STATISTICS
+===================================================== */
+
+function updateStatistics() {
+
+    branchCount.textContent =
+        branches.length;
+
+    const states =
+        new Set(
+            branches.map(
+                branch =>
+                    branch.state
+            )
+        );
+
+    const cities =
+        new Set(
+            branches.map(
+                branch =>
+                    branch.city
+            )
+        );
+
+    stateCount.textContent =
+        states.size;
+
+    cityCount.textContent =
+        cities.size;
 
 }
 
 
 /* =====================================================
-   HEADER
+   STATE DROPDOWN
 ===================================================== */
 
-.site-header {
+function populateStates() {
 
-    background:
-        rgba(255,255,255,0.96);
+    const states =
+        [...new Set(
+            branches.map(
+                branch =>
+                    branch.state
+            )
+        )]
+        .sort();
 
-    border-bottom:
-        1px solid var(--border);
+    stateFilter.innerHTML =
+        `<option value="">All States</option>`;
 
-    position:
-        sticky;
+    states.forEach(
+        state => {
 
-    top:
-        0;
+            const option =
+                document.createElement("option");
 
-    z-index:
-        1000;
+            option.value =
+                state;
 
-    backdrop-filter:
-        blur(15px);
+            option.textContent =
+                state;
 
-}
+            stateFilter.appendChild(
+                option
+            );
 
-.header-container {
-
-    max-width:
-        1400px;
-
-    margin:
-        auto;
-
-    padding:
-        16px 30px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        space-between;
-
-}
-
-.brand {
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-}
-
-.brand-logo {
-
-    font-size:
-        25px;
-
-    font-weight:
-        800;
-
-    letter-spacing:
-        1px;
-
-    color:
-        var(--primary);
-
-}
-
-.brand-subtitle {
-
-    font-size:
-        9px;
-
-    color:
-        var(--muted);
-
-    letter-spacing:
-        1.2px;
-
-}
-
-.main-nav {
-
-    display:
-        flex;
-
-    gap:
-        30px;
-
-}
-
-.main-nav a {
-
-    text-decoration:
-        none;
-
-    color:
-        #374151;
-
-    font-size:
-        14px;
-
-    font-weight:
-        600;
-
-    transition:
-        .25s;
-
-}
-
-.main-nav a:hover,
-.main-nav a.active {
-
-    color:
-        var(--primary);
-
-}
-
-.mobile-menu {
-
-    display:
-        none;
-
-    border:
-        none;
-
-    background:
-        none;
-
-    font-size:
-        22px;
+        }
+    );
 
 }
 
 
 /* =====================================================
-   HERO
+   CITY DROPDOWN
 ===================================================== */
 
-.hero {
+function populateCities() {
 
-    position:
-        relative;
+    const selectedState =
+        stateFilter.value;
 
-    min-height:
-        480px;
+    let filteredBranches =
+        branches;
 
-    display:
-        flex;
+    if (selectedState) {
 
-    align-items:
-        center;
+        filteredBranches =
+            branches.filter(
+                branch =>
+                    branch.state ===
+                    selectedState
+            );
 
-    overflow:
-        hidden;
+    }
 
-    background:
-        linear-gradient(
-            135deg,
-            #071e54,
-            #0b449c
+    const cities =
+        [...new Set(
+            filteredBranches.map(
+                branch =>
+                    branch.city
+            )
+        )]
+        .sort();
+
+    cityFilter.innerHTML =
+        `<option value="">All Cities</option>`;
+
+    cities.forEach(
+        city => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                city;
+
+            option.textContent =
+                city;
+
+            cityFilter.appendChild(
+                option
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   FILTER
+===================================================== */
+
+function filterBranches() {
+
+    const search =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    const selectedState =
+        stateFilter.value;
+
+    const selectedCity =
+        cityFilter.value;
+
+
+    const filtered =
+        branches.filter(
+            branch => {
+
+                const searchText = (
+
+                    branch.state +
+                    " " +
+                    branch.city +
+                    " " +
+                    branch.area +
+                    " " +
+                    branch.address +
+                    " " +
+                    branch.phone +
+                    " " +
+                    branch.email
+
+                ).toLowerCase();
+
+
+                const matchesSearch =
+                    !search ||
+                    searchText.includes(
+                        search
+                    );
+
+
+                const matchesState =
+                    !selectedState ||
+                    branch.state ===
+                    selectedState;
+
+
+                const matchesCity =
+                    !selectedCity ||
+                    branch.city ===
+                    selectedCity;
+
+
+                return (
+
+                    matchesSearch &&
+                    matchesState &&
+                    matchesCity
+
+                );
+
+            }
         );
 
+
+    renderBranches(filtered);
+
 }
 
-.hero-background {
 
-    position:
-        absolute;
+/* =====================================================
+   RENDER BRANCHES
+===================================================== */
 
-    inset:
-        0;
+function renderBranches(
+    data
+) {
 
-    background:
+    branchList.innerHTML = "";
 
-        radial-gradient(
-            circle at 80% 20%,
-            rgba(255,255,255,.15),
-            transparent 35%
-        ),
+    visibleCount.textContent =
+        data.length;
 
-        radial-gradient(
-            circle at 20% 80%,
-            rgba(255,255,255,.08),
-            transparent 30%
+
+    if (data.length === 0) {
+
+        branchList.classList.add(
+            "hidden"
         );
 
-}
+        noResults.classList.remove(
+            "hidden"
+        );
 
-.hero-content {
+        return;
 
-    position:
-        relative;
+    }
 
-    max-width:
-        900px;
 
-    margin:
-        auto;
+    branchList.classList.remove(
+        "hidden"
+    );
 
-    width:
-        100%;
+    noResults.classList.add(
+        "hidden"
+    );
 
-    padding:
-        70px 30px;
 
-    text-align:
-        center;
+    data.forEach(
+        branch => {
 
-    color:
-        white;
+            const card =
+                createBranchCard(
+                    branch
+                );
 
-}
+            branchList.appendChild(
+                card
+            );
 
-.hero-badge {
+        }
+    );
 
-    display:
-        inline-flex;
 
-    align-items:
-        center;
-
-    gap:
-        8px;
-
-    padding:
-        8px 15px;
-
-    border:
-        1px solid rgba(255,255,255,.25);
-
-    border-radius:
-        30px;
-
-    background:
-        rgba(255,255,255,.1);
-
-    font-size:
-        11px;
-
-    font-weight:
-        700;
-
-    letter-spacing:
-        1px;
-
-    margin-bottom:
-        25px;
+    updateResultTitle(data);
 
 }
 
-.hero h1 {
 
-    font-size:
-        clamp(38px, 6vw, 68px);
+/* =====================================================
+   BRANCH CARD
+===================================================== */
 
-    line-height:
-        1.08;
+function createBranchCard(
+    branch
+) {
 
-    font-weight:
-        800;
+    const card =
+        document.createElement(
+            "article"
+        );
 
-    margin-bottom:
-        20px;
+    card.className =
+        "branch-card";
+
+
+    const encodedAddress =
+        encodeURIComponent(
+            branch.address
+        );
+
+
+    const phoneNumber =
+        branch.phone
+            .replace(
+                /[^0-9+]/g,
+                ""
+            );
+
+
+    card.innerHTML = `
+
+        <div class="branch-top">
+
+            <div>
+
+                <div class="branch-area">
+
+                    ${escapeHTML(
+                        branch.area
+                    )}
+
+                </div>
+
+                <div class="branch-location">
+
+                    ${escapeHTML(
+                        branch.city
+                    )}
+                    ,
+                    ${escapeHTML(
+                        branch.state
+                    )}
+
+                </div>
+
+            </div>
+
+
+            <div class="branch-icon">
+
+                <i class="fa-solid fa-building"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="branch-info">
+
+            <div class="info-row">
+
+                <i class="fa-solid fa-location-dot"></i>
+
+                <span>
+
+                    ${escapeHTML(
+                        branch.address
+                    )}
+
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <i class="fa-solid fa-phone"></i>
+
+                <a href="tel:${phoneNumber}">
+
+                    ${escapeHTML(
+                        branch.phone
+                    )}
+
+                </a>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <i class="fa-solid fa-envelope"></i>
+
+                <a href="mailto:${branch.email}">
+
+                    ${escapeHTML(
+                        branch.email
+                    )}
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="branch-actions">
+
+            <a
+                href="tel:${phoneNumber}"
+                class="branch-button call-button">
+
+                <i class="fa-solid fa-phone"></i>
+
+                Call Branch
+
+            </a>
+
+
+            <a
+                href="https://www.google.com/maps/search/?api=1&query=${encodedAddress}"
+                target="_blank"
+                rel="noopener"
+                class="branch-button direction-button">
+
+                <i class="fa-solid fa-diamond-turn-right"></i>
+
+                Directions
+
+            </a>
+
+        </div>
+
+    `;
+
+
+    return card;
 
 }
 
-.hero h1 span {
 
-    color:
-        #ffcf35;
+/* =====================================================
+   RESULT TITLE
+===================================================== */
 
-}
+function updateResultTitle(
+    data
+) {
 
-.hero p {
+    if (
+        stateFilter.value &&
+        cityFilter.value
+    ) {
 
-    max-width:
-        650px;
+        resultTitle.textContent =
+            `${cityFilter.value} Branches`;
 
-    margin:
-        auto;
+        return;
 
-    font-size:
-        17px;
+    }
 
-    line-height:
-        1.7;
 
-    color:
-        rgba(255,255,255,.82);
+    if (stateFilter.value) {
+
+        resultTitle.textContent =
+            `${stateFilter.value} Branches`;
+
+        return;
+
+    }
+
+
+    resultTitle.textContent =
+        "All Branches";
 
 }
 
@@ -348,1284 +625,286 @@ body {
    SEARCH
 ===================================================== */
 
-.search-box {
+searchInput.addEventListener(
+    "input",
+    () => {
 
-    margin:
-        35px auto 18px;
+        filterBranches();
 
-    max-width:
-        720px;
-
-    height:
-        65px;
-
-    background:
-        white;
-
-    border-radius:
-        15px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    padding:
-        0 20px;
-
-    box-shadow:
-        0 20px 50px rgba(0,0,0,.18);
-
-}
-
-.search-box > i {
-
-    color:
-        var(--primary);
-
-    font-size:
-        19px;
-
-}
-
-.search-box input {
-
-    flex:
-        1;
-
-    border:
-        none;
-
-    outline:
-        none;
-
-    padding:
-        0 15px;
-
-    font-size:
-        15px;
-
-    color:
-        var(--text);
-
-}
-
-.clear-search {
-
-    border:
-        none;
-
-    background:
-        transparent;
-
-    color:
-        #9ca3af;
-
-    cursor:
-        pointer;
-
-    font-size:
-        18px;
-
-}
-
-.hero-actions {
-
-    display:
-        flex;
-
-    justify-content:
-        center;
-
-}
-
-.location-button {
-
-    border:
-        none;
-
-    padding:
-        12px 20px;
-
-    border-radius:
-        9px;
-
-    cursor:
-        pointer;
-
-    background:
-        rgba(255,255,255,.13);
-
-    color:
-        white;
-
-    border:
-        1px solid rgba(255,255,255,.2);
-
-    font-weight:
-        600;
-
-    transition:
-        .25s;
-
-}
-
-.location-button:hover {
-
-    background:
-        white;
-
-    color:
-        var(--primary);
-
-}
+    }
+);
 
 
 /* =====================================================
-   STATISTICS
+   STATE CHANGE
 ===================================================== */
 
-.stats-section {
+stateFilter.addEventListener(
+    "change",
+    () => {
 
-    margin-top:
-        -40px;
+        populateCities();
 
-    position:
-        relative;
+        cityFilter.value = "";
 
-    z-index:
-        5;
+        filterBranches();
 
-}
-
-.stats-container {
-
-    max-width:
-        1050px;
-
-    margin:
-        auto;
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap:
-        18px;
-
-    padding:
-        0 25px;
-
-}
-
-.stat-card {
-
-    background:
-        white;
-
-    border-radius:
-        16px;
-
-    padding:
-        22px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        15px;
-
-    box-shadow:
-        var(--shadow);
-
-}
-
-.stat-icon {
-
-    width:
-        50px;
-
-    height:
-        50px;
-
-    border-radius:
-        12px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    background:
-        #eef3ff;
-
-    color:
-        var(--primary);
-
-    font-size:
-        20px;
-
-}
-
-.stat-card span {
-
-    display:
-        block;
-
-    font-size:
-        24px;
-
-    font-weight:
-        800;
-
-}
-
-.stat-card small {
-
-    color:
-        var(--muted);
-
-}
+    }
+);
 
 
 /* =====================================================
-   MAIN
+   CITY CHANGE
 ===================================================== */
 
-.main-container {
+cityFilter.addEventListener(
+    "change",
+    () => {
 
-    max-width:
-        1400px;
+        filterBranches();
 
-    margin:
-        auto;
-
-    padding:
-        60px 30px;
-
-}
+    }
+);
 
 
 /* =====================================================
-   FILTER PANEL
+   CLEAR SEARCH
 ===================================================== */
 
-.filter-panel {
+clearSearch.addEventListener(
+    "click",
+    () => {
 
-    background:
-        white;
+        searchInput.value = "";
 
-    border:
-        1px solid var(--border);
+        filterBranches();
 
-    border-radius:
-        20px;
+        searchInput.focus();
 
-    padding:
-        28px;
-
-    box-shadow:
-        var(--shadow);
-
-}
-
-.filter-heading {
-
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        center;
-
-    margin-bottom:
-        25px;
-
-}
-
-.small-heading,
-.results-label {
-
-    font-size:
-        10px;
-
-    font-weight:
-        800;
-
-    letter-spacing:
-        1.4px;
-
-    color:
-        var(--primary);
-
-}
-
-.filter-heading h2 {
-
-    margin-top:
-        5px;
-
-    font-size:
-        26px;
-
-}
-
-.reset-button {
-
-    border:
-        1px solid var(--border);
-
-    background:
-        white;
-
-    padding:
-        10px 15px;
-
-    border-radius:
-        8px;
-
-    cursor:
-        pointer;
-
-    font-weight:
-        600;
-
-    color:
-        #4b5563;
-
-}
-
-.reset-button:hover {
-
-    border-color:
-        var(--primary);
-
-    color:
-        var(--primary);
-
-}
-
-.filters {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr 1fr 220px;
-
-    gap:
-        18px;
-
-}
-
-.filter-group label {
-
-    display:
-        block;
-
-    font-size:
-        12px;
-
-    font-weight:
-        700;
-
-    margin-bottom:
-        8px;
-
-}
-
-.select-wrapper {
-
-    position:
-        relative;
-
-}
-
-.select-wrapper i {
-
-    position:
-        absolute;
-
-    left:
-        15px;
-
-    top:
-        50%;
-
-    transform:
-        translateY(-50%);
-
-    color:
-        var(--primary);
-
-}
-
-.select-wrapper select {
-
-    width:
-        100%;
-
-    height:
-        48px;
-
-    border:
-        1px solid var(--border);
-
-    border-radius:
-        10px;
-
-    background:
-        white;
-
-    padding:
-        0 15px 0 42px;
-
-    outline:
-        none;
-
-    font-size:
-        14px;
-
-}
-
-.select-wrapper select:focus {
-
-    border-color:
-        var(--primary);
-
-}
-
-.view-buttons {
-
-    height:
-        48px;
-
-    display:
-        flex;
-
-    background:
-        #f3f4f6;
-
-    padding:
-        4px;
-
-    border-radius:
-        10px;
-
-}
-
-.view-btn {
-
-    flex:
-        1;
-
-    border:
-        none;
-
-    border-radius:
-        7px;
-
-    background:
-        transparent;
-
-    cursor:
-        pointer;
-
-    font-weight:
-        600;
-
-}
-
-.view-btn.active {
-
-    background:
-        white;
-
-    color:
-        var(--primary);
-
-    box-shadow:
-        0 2px 8px rgba(0,0,0,.07);
-
-}
+    }
+);
 
 
 /* =====================================================
-   RESULTS
+   RESET
 ===================================================== */
 
-.results-header {
+function resetAllFilters() {
 
-    display:
-        flex;
+    searchInput.value = "";
 
-    justify-content:
-        space-between;
+    stateFilter.value = "";
 
-    align-items:
-        center;
+    populateCities();
 
-    margin:
-        45px 0 20px;
+    cityFilter.value = "";
 
-}
-
-.results-header h2 {
-
-    font-size:
-        28px;
-
-    margin-top:
-        5px;
+    renderBranches(
+        branches
+    );
 
 }
 
-.result-count {
 
-    background:
-        #eef3ff;
+resetFilters.addEventListener(
+    "click",
+    resetAllFilters
+);
 
-    color:
-        var(--primary);
 
-    padding:
-        9px 15px;
-
-    border-radius:
-        30px;
-
-    font-size:
-        13px;
-
-    font-weight:
-        700;
-
-}
+clearFiltersButton.addEventListener(
+    "click",
+    resetAllFilters
+);
 
 
 /* =====================================================
-   BRANCH GRID
+   LIST VIEW
 ===================================================== */
 
-.branch-grid {
+listViewBtn.addEventListener(
+    "click",
+    () => {
 
-    display:
-        grid;
+        listViewBtn.classList.add(
+            "active"
+        );
 
-    grid-template-columns:
-        repeat(3, 1fr);
+        mapViewBtn.classList.remove(
+            "active"
+        );
 
-    gap:
-        20px;
+        branchList.classList.remove(
+            "hidden"
+        );
 
-}
-
-.branch-card {
-
-    background:
-        white;
-
-    border:
-        1px solid var(--border);
-
-    border-radius:
-        17px;
-
-    padding:
-        23px;
-
-    position:
-        relative;
-
-    transition:
-        .3s;
-
-    animation:
-        cardAppear .35s ease;
-
-}
-
-@keyframes cardAppear {
-
-    from {
-
-        opacity:
-            0;
-
-        transform:
-            translateY(10px);
+        mapContainer.classList.add(
+            "hidden"
+        );
 
     }
-
-    to {
-
-        opacity:
-            1;
-
-        transform:
-            translateY(0);
-
-    }
-
-}
-
-.branch-card:hover {
-
-    transform:
-        translateY(-5px);
-
-    border-color:
-        rgba(9,47,135,.25);
-
-    box-shadow:
-        var(--shadow);
-
-}
-
-.branch-top {
-
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    gap:
-        15px;
-
-    margin-bottom:
-        18px;
-
-}
-
-.branch-area {
-
-    font-size:
-        18px;
-
-    font-weight:
-        800;
-
-}
-
-.branch-location {
-
-    font-size:
-        12px;
-
-    color:
-        var(--muted);
-
-    margin-top:
-        5px;
-
-}
-
-.branch-icon {
-
-    width:
-        42px;
-
-    height:
-        42px;
-
-    min-width:
-        42px;
-
-    border-radius:
-        12px;
-
-    background:
-        #eef3ff;
-
-    color:
-        var(--primary);
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-}
-
-.branch-info {
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    gap:
-        13px;
-
-    margin-bottom:
-        20px;
-
-}
-
-.info-row {
-
-    display:
-        flex;
-
-    align-items:
-        flex-start;
-
-    gap:
-        12px;
-
-    font-size:
-        13px;
-
-    line-height:
-        1.5;
-
-}
-
-.info-row i {
-
-    width:
-        18px;
-
-    color:
-        var(--primary);
-
-    margin-top:
-        3px;
-
-}
-
-.info-row a {
-
-    color:
-        #374151;
-
-    text-decoration:
-        none;
-
-}
-
-.info-row a:hover {
-
-    color:
-        var(--primary);
-
-}
-
-.branch-actions {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap:
-        8px;
-
-}
-
-.branch-button {
-
-    height:
-        42px;
-
-    border:
-        none;
-
-    border-radius:
-        8px;
-
-    cursor:
-        pointer;
-
-    font-size:
-        12px;
-
-    font-weight:
-        700;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        7px;
-
-    text-decoration:
-        none;
-
-}
-
-.call-button {
-
-    background:
-        #eef3ff;
-
-    color:
-        var(--primary);
-
-}
-
-.direction-button {
-
-    background:
-        var(--primary);
-
-    color:
-        white;
-
-}
-
-.direction-button:hover {
-
-    background:
-        var(--primary-dark);
-
-}
+);
 
 
 /* =====================================================
-   MAP
+   MAP VIEW
 ===================================================== */
 
-.map-container {
+mapViewBtn.addEventListener(
+    "click",
+    () => {
 
-    min-height:
-        600px;
+        mapViewBtn.classList.add(
+            "active"
+        );
 
-    border-radius:
-        20px;
+        listViewBtn.classList.remove(
+            "active"
+        );
 
-    background:
-        #e8edf5;
+        branchList.classList.add(
+            "hidden"
+        );
 
-    position:
-        relative;
+        mapContainer.classList.remove(
+            "hidden"
+        );
 
-    overflow:
-        hidden;
-
-}
-
-.map-message {
-
-    position:
-        absolute;
-
-    left:
-        50%;
-
-    top:
-        50%;
-
-    transform:
-        translate(-50%,-50%);
-
-    background:
-        white;
-
-    padding:
-        35px;
-
-    border-radius:
-        15px;
-
-    text-align:
-        center;
-
-    max-width:
-        400px;
-
-    box-shadow:
-        var(--shadow);
-
-}
-
-.map-message i {
-
-    font-size:
-        40px;
-
-    color:
-        var(--primary);
-
-    margin-bottom:
-        15px;
-
-}
-
-.map-message h3 {
-
-    margin-bottom:
-        8px;
-
-}
-
-.map-message p {
-
-    color:
-        var(--muted);
-
-    font-size:
-        13px;
-
-    line-height:
-        1.6;
-
-}
+    }
+);
 
 
 /* =====================================================
-   NO RESULTS
+   NEAR ME
 ===================================================== */
 
-.no-results {
+nearMeBtn.addEventListener(
+    "click",
+    () => {
 
-    text-align:
-        center;
+        if (
+            !navigator.geolocation
+        ) {
 
-    padding:
-        70px 20px;
+            alert(
+                "Location services are not supported by this browser."
+            );
 
-}
+            return;
 
-.no-results-icon {
+        }
 
-    width:
-        75px;
 
-    height:
-        75px;
+        nearMeBtn.innerHTML = `
 
-    margin:
-        auto;
+            <i class="fa-solid fa-spinner fa-spin"></i>
 
-    border-radius:
-        50%;
+            Finding...
 
-    background:
-        #eef3ff;
+        `;
 
-    color:
-        var(--primary);
 
-    display:
-        flex;
+        navigator.geolocation.getCurrentPosition(
 
-    align-items:
-        center;
+            position => {
 
-    justify-content:
-        center;
+                const lat =
+                    position.coords.latitude;
 
-    font-size:
-        30px;
+                const lng =
+                    position.coords.longitude;
 
-}
 
-.no-results h3 {
+                /*
+                    For actual nearest-branch
+                    calculation, add latitude
+                    and longitude to every branch.
 
-    margin:
-        20px 0 8px;
+                    Example:
 
-}
+                    latitude: 19.0760,
+                    longitude: 72.8777
+                */
 
-.no-results p {
 
-    color:
-        var(--muted);
+                const mapsURL =
+                    `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
-}
 
-.no-results button {
+                window.open(
+                    mapsURL,
+                    "_blank"
+                );
 
-    margin-top:
-        20px;
 
-    border:
-        none;
+                nearMeBtn.innerHTML = `
 
-    background:
-        var(--primary);
+                    <i class="fa-solid fa-location-crosshairs"></i>
 
-    color:
-        white;
+                    Find Near Me
 
-    padding:
-        11px 20px;
+                `;
 
-    border-radius:
-        8px;
+            },
 
-    cursor:
-        pointer;
+            error => {
 
-}
+                alert(
+                    "Unable to access your location. Please allow location permission."
+                );
+
+
+                nearMeBtn.innerHTML = `
+
+                    <i class="fa-solid fa-location-crosshairs"></i>
+
+                    Find Near Me
+
+                `;
+
+            }
+
+        );
+
+    }
+);
 
 
 /* =====================================================
-   FOOTER
+   HTML ESCAPE
 ===================================================== */
 
-.footer {
+function escapeHTML(
+    value
+) {
 
-    background:
-        #071b48;
+    if (!value) {
 
-    color:
-        white;
+        return "";
 
-    padding:
-        45px 30px 20px;
+    }
+
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
-
-.footer-container {
-
-    max-width:
-        1400px;
-
-    margin:
-        auto;
-
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        center;
-
-}
-
-.footer-logo {
-
-    font-size:
-        24px;
-
-    font-weight:
-        800;
-
-}
-
-.footer p {
-
-    color:
-        rgba(255,255,255,.6);
-
-    font-size:
-        12px;
-
-    margin-top:
-        5px;
-
-}
-
-.footer-links {
-
-    display:
-        flex;
-
-    gap:
-        25px;
-
-}
-
-.footer-links a {
-
-    color:
-        rgba(255,255,255,.75);
-
-    text-decoration:
-        none;
-
-    font-size:
-        13px;
-
-}
-
-.copyright {
-
-    max-width:
-        1400px;
-
-    margin:
-        35px auto 0;
-
-    padding-top:
-        20px;
-
-    border-top:
-        1px solid rgba(255,255,255,.1);
-
-    text-align:
-        center;
-
-    color:
-        rgba(255,255,255,.45);
-
-    font-size:
-        11px;
-
-}
-
-
-/* =====================================================
-   UTILITY
-===================================================== */
-
-.hidden {
-    display:
-        none !important;
-}
-
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media(max-width:1100px) {
-
-    .branch-grid {
-
-        grid-template-columns:
-            repeat(2,1fr);
-
-    }
-
-}
-
-@media(max-width:800px) {
-
-    .main-nav {
-        display:
-            none;
-    }
-
-    .mobile-menu {
-        display:
-            block;
-    }
-
-    .stats-container {
-
-        grid-template-columns:
-            1fr;
-
-    }
-
-    .filters {
-
-        grid-template-columns:
-            1fr;
-
-    }
-
-    .branch-grid {
-
-        grid-template-columns:
-            1fr;
-
-    }
-
-    .footer-container {
-
-        flex-direction:
-            column;
-
-        align-items:
-            flex-start;
-
-        gap:
-            25px;
-
-    }
-
-    .hero {
-
-        min-height:
-            440px;
-
-    }
-
-}
-
-@media(max-width:500px) {
-
-    .header-container {
-
-        padding:
-            14px 18px;
-
-    }
-
-    .main-container {
-
-        padding:
-            40px 15px;
-
-    }
-
-    .hero-content {
-
-        padding:
-            55px 18px;
-
-    }
-
-    .hero h1 {
-
-        font-size:
-            38px;
-
-    }
-
-    .filter-panel {
-
-        padding:
-            20px;
-
-    }
-
-    .results-header {
-
-        align-items:
-            flex-start;
-
-        gap:
-            15px;
-
-    }
-
-    .results-header h2 {
-
-        font-size:
-            22px;
-
-    }
-
-       }
