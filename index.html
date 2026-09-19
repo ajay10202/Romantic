@@ -1,83 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <title>Bluechip Branch Locator</title>
 
-    <title>My CAD Viewer</title>
+    <link rel="stylesheet" href="style.css">
 
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet"
-          href="style.css">
-
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
-
 
 <body>
 
-
-<!-- =====================================
+<!-- =====================================================
      HEADER
-===================================== -->
+===================================================== -->
 
-<header class="header">
+<header class="site-header">
 
-    <div class="brand">
-        <span class="cube">◆</span>
-        My CAD Viewer
-    </div>
+    <div class="header-container">
 
+        <div class="brand">
+            <div class="brand-logo">
+                BLUECHIP
+            </div>
 
-    <div class="toolbar">
+            <div class="brand-subtitle">
+                Corporate Investment Centre
+            </div>
+        </div>
 
-        <label class="toolbar-btn">
+        <nav class="main-nav">
 
-            📂 Open
+            <a href="#">
+                Home
+            </a>
 
-            <input
-                type="file"
-                id="fileInput"
-                multiple
-                accept="
-                    .step,
-                    .stp,
-                    .iges,
-                    .igs,
-                    .stl,
-                    .obj,
-                    .gltf,
-                    .glb
-                "
-            >
+            <a href="#">
+                Mutual Funds
+            </a>
 
-        </label>
+            <a href="#">
+                Equity
+            </a>
 
+            <a href="#">
+                Knowledge Centre
+            </a>
 
-        <button id="fitBtn">
-            Fit
-        </button>
+            <a href="#" class="active">
+                Branch Locator
+            </a>
 
+        </nav>
 
-        <button id="homeBtn">
-            Home
-        </button>
-
-
-        <button id="measureBtn">
-            📏 Measure
-        </button>
-
-
-        <button id="wireBtn">
-            ◇ Edges
-        </button>
-
-
-        <button id="fullscreenBtn">
-            ⛶
+        <button class="mobile-menu" id="mobileMenu">
+            <i class="fa-solid fa-bars"></i>
         </button>
 
     </div>
@@ -85,420 +71,406 @@
 </header>
 
 
+<!-- =====================================================
+     HERO
+===================================================== -->
 
-<!-- =====================================
+<section class="hero">
+
+    <div class="hero-background"></div>
+
+    <div class="hero-content">
+
+        <div class="hero-badge">
+            <i class="fa-solid fa-location-dot"></i>
+            BLUECHIP BRANCH LOCATOR
+        </div>
+
+        <h1>
+            Find Your Nearest
+            <span>Bluechip Branch</span>
+        </h1>
+
+        <p>
+            Connect with our team at a Bluechip branch near you.
+            Search by state, city or area.
+        </p>
+
+        <!-- Search -->
+
+        <div class="search-box">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search city, area, branch or address..."
+                autocomplete="off"
+            >
+
+            <button id="clearSearch" class="clear-search">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <div class="hero-actions">
+
+            <button id="nearMeBtn" class="location-button">
+
+                <i class="fa-solid fa-location-crosshairs"></i>
+
+                Find Near Me
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     STATISTICS
+===================================================== -->
+
+<section class="stats-section">
+
+    <div class="stats-container">
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+                <span id="branchCount">0</span>
+                <small>Branches</small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-map"></i>
+            </div>
+
+            <div>
+                <span id="stateCount">0</span>
+                <small>States / Regions</small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-city"></i>
+            </div>
+
+            <div>
+                <span id="cityCount">0</span>
+                <small>Cities</small>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
      MAIN
-===================================== -->
+===================================================== -->
 
-<div class="main">
-
-
-    <!-- =================================
-         LEFT PANEL
-    ================================== -->
-
-    <aside class="left-panel">
+<main class="main-container">
 
 
-        <div class="panel-title">
-            MODEL
-        </div>
+    <!-- FILTER PANEL -->
 
+    <section class="filter-panel">
 
-        <div id="modelName"
-             class="model-name">
-
-            No model loaded
-
-        </div>
-
-
-        <div class="panel-title">
-            FILE
-        </div>
-
-
-        <div class="file-info">
+        <div class="filter-heading">
 
             <div>
-                Format:
-                <span id="fileFormat">
-                    -
+
+                <span class="small-heading">
+                    EXPLORE OUR NETWORK
                 </span>
+
+                <h2>
+                    Find a Branch
+                </h2>
+
             </div>
 
+            <button id="resetFilters" class="reset-button">
 
-            <div>
-                Size:
-                <span id="fileSize">
-                    -
-                </span>
-            </div>
+                <i class="fa-solid fa-rotate-left"></i>
+
+                Reset
+
+            </button>
 
         </div>
 
 
-        <div class="panel-title">
-            VIEW
-        </div>
+        <div class="filters">
 
+            <!-- State -->
 
-        <button class="side-btn"
-                onclick="setView('front')">
+            <div class="filter-group">
 
-            Front
+                <label>
+                    State
+                </label>
 
-        </button>
+                <div class="select-wrapper">
 
+                    <i class="fa-solid fa-map-location-dot"></i>
 
-        <button class="side-btn"
-                onclick="setView('back')">
+                    <select id="stateFilter">
 
-            Back
+                        <option value="">
+                            All States
+                        </option>
 
-        </button>
+                    </select>
 
-
-        <button class="side-btn"
-                onclick="setView('top')">
-
-            Top
-
-        </button>
-
-
-        <button class="side-btn"
-                onclick="setView('bottom')">
-
-            Bottom
-
-        </button>
-
-
-        <button class="side-btn"
-                onclick="setView('left')">
-
-            Left
-
-        </button>
-
-
-        <button class="side-btn"
-                onclick="setView('right')">
-
-            Right
-
-        </button>
-
-
-        <button class="side-btn"
-                onclick="setView('iso')">
-
-            Isometric
-
-        </button>
-
-
-        <div class="panel-title">
-            DISPLAY
-        </div>
-
-
-        <button class="side-btn"
-                id="backgroundBtn">
-
-            Background
-
-        </button>
-
-
-        <button class="side-btn"
-                id="axesBtn">
-
-            Axes
-
-        </button>
-
-
-    </aside>
-
-
-
-    <!-- =================================
-         VIEWER
-    ================================== -->
-
-    <section
-        id="viewer"
-        class="viewer">
-
-
-        <!-- DROP AREA -->
-
-        <div id="dropArea"
-             class="drop-area">
-
-            <div class="drop-icon">
-                ◇
-            </div>
-
-            <h2>
-                Drop 3D Model Here
-            </h2>
-
-            <p>
-                STEP · STP · IGES · STL · OBJ · GLTF
-            </p>
-
-            <label class="open-big">
-
-                Open 3D File
-
-                <input
-                    type="file"
-                    id="bigFileInput"
-                    multiple
-                    accept="
-                        .step,
-                        .stp,
-                        .iges,
-                        .igs,
-                        .stl,
-                        .obj,
-                        .gltf,
-                        .glb
-                    "
-                >
-
-            </label>
-
-        </div>
-
-
-        <!-- MEASUREMENT -->
-
-        <div id="measurementBox"
-             class="measurement-box">
-
-            <div class="measurement-title">
-
-                📏 Measurement
-
-                <button id="closeMeasure">
-                    ×
-                </button>
+                </div>
 
             </div>
 
 
-            <div class="measurement-content">
+            <!-- City -->
 
-                Select two points on the model.
+            <div class="filter-group">
+
+                <label>
+                    City
+                </label>
+
+                <div class="select-wrapper">
+
+                    <i class="fa-solid fa-city"></i>
+
+                    <select id="cityFilter">
+
+                        <option value="">
+                            All Cities
+                        </option>
+
+                    </select>
+
+                </div>
 
             </div>
 
 
-            <div id="distance"
-                 class="distance">
+            <!-- View -->
 
-                0.00 mm
+            <div class="filter-group view-group">
+
+                <label>
+                    View
+                </label>
+
+                <div class="view-buttons">
+
+                    <button
+                        id="listViewBtn"
+                        class="view-btn active">
+
+                        <i class="fa-solid fa-list"></i>
+
+                        List
+
+                    </button>
+
+                    <button
+                        id="mapViewBtn"
+                        class="view-btn">
+
+                        <i class="fa-solid fa-map"></i>
+
+                        Map
+
+                    </button>
+
+                </div>
 
             </div>
 
         </div>
-
-
-        <!-- LOADING -->
-
-        <div id="loading"
-             class="loading">
-
-            <div class="spinner"></div>
-
-            <div>
-                Loading model...
-            </div>
-
-        </div>
-
-
-        <!-- STATUS -->
-
-        <div id="status"
-             class="status">
-
-            Ready
-
-        </div>
-
-
-        <!-- VIEW CUBE -->
-
-        <div class="view-cube">
-
-            <div class="cube-face top">
-                TOP
-            </div>
-
-            <div class="cube-face front">
-                FRONT
-            </div>
-
-            <div class="cube-face right">
-                RIGHT
-            </div>
-
-        </div>
-
 
     </section>
 
 
+    <!-- RESULTS HEADER -->
 
-    <!-- =================================
-         RIGHT PANEL
-    ================================== -->
+    <section class="results-header">
 
-    <aside class="right-panel">
+        <div>
 
-
-        <div class="panel-title">
-            PROPERTIES
-        </div>
-
-
-        <div class="property">
-
-            <span>
-                File
+            <span class="results-label">
+                BRANCHES
             </span>
 
-            <strong id="propertyFile">
-                -
-            </strong>
+            <h2 id="resultTitle">
+                All Branches
+            </h2>
 
         </div>
 
+        <div class="result-count">
 
-        <div class="property">
-
-            <span>
-                Format
+            <span id="visibleCount">
+                0
             </span>
 
-            <strong id="propertyFormat">
-                -
-            </strong>
+            Results
 
         </div>
 
+    </section>
 
-        <div class="property">
 
-            <span>
-                X Size
-            </span>
+    <!-- CONTENT -->
 
-            <strong id="sizeX">
-                -
-            </strong>
+    <section class="content-area">
 
+        <!-- BRANCH LIST -->
+
+        <div
+            id="branchList"
+            class="branch-grid">
         </div>
 
 
-        <div class="property">
+        <!-- MAP -->
 
-            <span>
-                Y Size
-            </span>
+        <div
+            id="mapContainer"
+            class="map-container hidden">
 
-            <strong id="sizeY">
-                -
-            </strong>
+            <div class="map-message">
 
-        </div>
+                <i class="fa-solid fa-map-location-dot"></i>
 
+                <h3>
+                    Branch Map
+                </h3>
 
-        <div class="property">
+                <p>
+                    Select a branch to open its location
+                    in Google Maps.
+                </p>
 
-            <span>
-                Z Size
-            </span>
-
-            <strong id="sizeZ">
-                -
-            </strong>
+            </div>
 
         </div>
 
+    </section>
 
-        <div class="property">
 
-            <span>
-                Unit
-            </span>
+    <!-- NO RESULTS -->
 
-            <strong>
-                mm
-            </strong>
+    <section
+        id="noResults"
+        class="no-results hidden">
+
+        <div class="no-results-icon">
+
+            <i class="fa-solid fa-location-dot"></i>
 
         </div>
 
+        <h3>
+            No branch found
+        </h3>
 
-        <div class="panel-title">
-            CONTROLS
-        </div>
+        <p>
+            Try searching with another city,
+            area or state.
+        </p>
+
+        <button id="clearFiltersButton">
+
+            Clear Search
+
+        </button>
+
+    </section>
+
+</main>
 
 
-        <div class="controls-help">
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+
+            <div class="footer-logo">
+                BLUECHIP
+            </div>
 
             <p>
-                🖱 Left click + drag
-                <br>
-                Rotate
-            </p>
-
-
-            <p>
-                🖱 Right click + drag
-                <br>
-                Pan
-            </p>
-
-
-            <p>
-                🖱 Mouse wheel
-                <br>
-                Zoom
-            </p>
-
-
-            <p>
-                📏 Measure
-                <br>
-                Select two points
+                Corporate Investment Centre
             </p>
 
         </div>
 
-    </aside>
 
-</div>
+        <div class="footer-links">
+
+            <a href="#">
+                Home
+            </a>
+
+            <a href="#">
+                About Us
+            </a>
+
+            <a href="#">
+                Mutual Funds
+            </a>
+
+            <a href="#">
+                Contact
+            </a>
+
+        </div>
+
+    </div>
 
 
+    <div class="copyright">
 
-<!-- =====================================
-     ONLINE 3D VIEWER ENGINE
-===================================== -->
+        © Bluechip Corporate Investment Centre.
+        All Rights Reserved.
 
-<script
-src="https://cdn.jsdelivr.net/npm/online-3d-viewer@0.18.0/build/o3dv.min.js">
-</script>
+    </div>
 
+</footer>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
 
 <script src="script.js"></script>
 
-
 </body>
-
 </html>
