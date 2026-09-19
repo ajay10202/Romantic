@@ -1,696 +1,1631 @@
-/* ==========================================
-   CAD VIEWER
-   Online 3D Viewer Engine
-========================================== */
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+
+    --primary: #092f87;
+    --primary-dark: #061f5c;
+    --secondary: #e91d2d;
+
+    --text: #172033;
+    --muted: #6b7280;
+
+    --background: #f5f7fb;
+    --white: #ffffff;
+
+    --border: #e5e7eb;
+
+    --shadow:
+        0 15px 40px rgba(10, 40, 90, 0.08);
+
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+
+    font-family: "Inter", sans-serif;
+
+    background:
+        var(--background);
+
+    color:
+        var(--text);
+
+}
 
 
-let viewer = null;
+/* =====================================================
+   HEADER
+===================================================== */
 
-let currentFile = null;
+.site-header {
 
-let modelLoaded = false;
+    background:
+        rgba(255,255,255,0.96);
+
+    border-bottom:
+        1px solid var(--border);
+
+    position:
+        sticky;
+
+    top:
+        0;
+
+    z-index:
+        1000;
+
+    backdrop-filter:
+        blur(15px);
+
+}
+
+.header-container {
+
+    max-width:
+        1400px;
+
+    margin:
+        auto;
+
+    padding:
+        16px 30px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+}
+
+.brand {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+}
+
+.brand-logo {
+
+    font-size:
+        25px;
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        1px;
+
+    color:
+        var(--primary);
+
+}
+
+.brand-subtitle {
+
+    font-size:
+        9px;
+
+    color:
+        var(--muted);
+
+    letter-spacing:
+        1.2px;
+
+}
+
+.main-nav {
+
+    display:
+        flex;
+
+    gap:
+        30px;
+
+}
+
+.main-nav a {
+
+    text-decoration:
+        none;
+
+    color:
+        #374151;
+
+    font-size:
+        14px;
+
+    font-weight:
+        600;
+
+    transition:
+        .25s;
+
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+
+    color:
+        var(--primary);
+
+}
+
+.mobile-menu {
+
+    display:
+        none;
+
+    border:
+        none;
+
+    background:
+        none;
+
+    font-size:
+        22px;
+
+}
 
 
-/* ==========================================
-   ELEMENTS
-========================================== */
+/* =====================================================
+   HERO
+===================================================== */
 
-const viewerElement =
-    document.getElementById("viewer");
+.hero {
 
-const dropArea =
-    document.getElementById("dropArea");
+    position:
+        relative;
 
-const loading =
-    document.getElementById("loading");
+    min-height:
+        480px;
 
-const status =
-    document.getElementById("status");
+    display:
+        flex;
 
-const fileInput =
-    document.getElementById("fileInput");
+    align-items:
+        center;
 
-const bigFileInput =
-    document.getElementById("bigFileInput");
+    overflow:
+        hidden;
 
-const measurementBox =
-    document.getElementById("measurementBox");
+    background:
+        linear-gradient(
+            135deg,
+            #071e54,
+            #0b449c
+        );
 
-const distance =
-    document.getElementById("distance");
+}
 
+.hero-background {
 
-/* ==========================================
-   ONLINE 3D VIEWER SETTINGS
-========================================== */
+    position:
+        absolute;
 
-OV.SetExternalLibLocation(
-    "https://cdn.jsdelivr.net/npm/online-3d-viewer@0.18.0/libs"
-);
+    inset:
+        0;
 
+    background:
 
-/* ==========================================
-   VIEWER PARAMETERS
-========================================== */
-
-const viewerParameters = {
-
-    backgroundColor:
-        new OV.RGBAColor(
-            24,
-            27,
-            31,
-            255
+        radial-gradient(
+            circle at 80% 20%,
+            rgba(255,255,255,.15),
+            transparent 35%
         ),
 
-    defaultColor:
-        new OV.RGBColor(
-            185,
-            190,
-            198
-        ),
-
-    edgeSettings:
-        new OV.EdgeSettings(
-            true,
-            new OV.RGBColor(
-                45,
-                48,
-                53
-            ),
-            30
-        ),
-
-    onModelLoaded:
-        function() {
-
-            modelLoaded = true;
-
-            loading.style.display =
-                "none";
-
-            dropArea.style.display =
-                "none";
-
-            status.innerText =
-                "Model loaded";
-
-            updateProperties();
-
-        },
-
-    onModelLoadFailed:
-        function() {
-
-            loading.style.display =
-                "none";
-
-            status.innerText =
-                "Failed to load model";
-
-            alert(
-                "Unable to load this CAD file."
-            );
-
-        }
-
-};
-
-
-/* ==========================================
-   CREATE VIEWER
-========================================== */
-
-function createViewer() {
-
-    if (viewer) {
-
-        try {
-
-            viewer.Destroy();
-
-        }
-
-        catch (e) {
-
-            console.log(e);
-
-        }
-
-    }
-
-
-    viewer =
-        new OV.EmbeddedViewer(
-            viewerElement,
-            viewerParameters
+        radial-gradient(
+            circle at 20% 80%,
+            rgba(255,255,255,.08),
+            transparent 30%
         );
 
 }
 
+.hero-content {
 
-createViewer();
+    position:
+        relative;
+
+    max-width:
+        900px;
+
+    margin:
+        auto;
+
+    width:
+        100%;
+
+    padding:
+        70px 30px;
+
+    text-align:
+        center;
+
+    color:
+        white;
+
+}
+
+.hero-badge {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    padding:
+        8px 15px;
+
+    border:
+        1px solid rgba(255,255,255,.25);
+
+    border-radius:
+        30px;
+
+    background:
+        rgba(255,255,255,.1);
+
+    font-size:
+        11px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        1px;
+
+    margin-bottom:
+        25px;
+
+}
+
+.hero h1 {
+
+    font-size:
+        clamp(38px, 6vw, 68px);
+
+    line-height:
+        1.08;
+
+    font-weight:
+        800;
+
+    margin-bottom:
+        20px;
+
+}
+
+.hero h1 span {
+
+    color:
+        #ffcf35;
+
+}
+
+.hero p {
+
+    max-width:
+        650px;
+
+    margin:
+        auto;
+
+    font-size:
+        17px;
+
+    line-height:
+        1.7;
+
+    color:
+        rgba(255,255,255,.82);
+
+}
 
 
-/* ==========================================
-   FILE INPUT
-========================================== */
+/* =====================================================
+   SEARCH
+===================================================== */
 
-fileInput.addEventListener(
-    "change",
-    function(event) {
+.search-box {
 
-        loadFiles(
-            event.target.files
-        );
+    margin:
+        35px auto 18px;
+
+    max-width:
+        720px;
+
+    height:
+        65px;
+
+    background:
+        white;
+
+    border-radius:
+        15px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    padding:
+        0 20px;
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.18);
+
+}
+
+.search-box > i {
+
+    color:
+        var(--primary);
+
+    font-size:
+        19px;
+
+}
+
+.search-box input {
+
+    flex:
+        1;
+
+    border:
+        none;
+
+    outline:
+        none;
+
+    padding:
+        0 15px;
+
+    font-size:
+        15px;
+
+    color:
+        var(--text);
+
+}
+
+.clear-search {
+
+    border:
+        none;
+
+    background:
+        transparent;
+
+    color:
+        #9ca3af;
+
+    cursor:
+        pointer;
+
+    font-size:
+        18px;
+
+}
+
+.hero-actions {
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+}
+
+.location-button {
+
+    border:
+        none;
+
+    padding:
+        12px 20px;
+
+    border-radius:
+        9px;
+
+    cursor:
+        pointer;
+
+    background:
+        rgba(255,255,255,.13);
+
+    color:
+        white;
+
+    border:
+        1px solid rgba(255,255,255,.2);
+
+    font-weight:
+        600;
+
+    transition:
+        .25s;
+
+}
+
+.location-button:hover {
+
+    background:
+        white;
+
+    color:
+        var(--primary);
+
+}
+
+
+/* =====================================================
+   STATISTICS
+===================================================== */
+
+.stats-section {
+
+    margin-top:
+        -40px;
+
+    position:
+        relative;
+
+    z-index:
+        5;
+
+}
+
+.stats-container {
+
+    max-width:
+        1050px;
+
+    margin:
+        auto;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:
+        18px;
+
+    padding:
+        0 25px;
+
+}
+
+.stat-card {
+
+    background:
+        white;
+
+    border-radius:
+        16px;
+
+    padding:
+        22px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        15px;
+
+    box-shadow:
+        var(--shadow);
+
+}
+
+.stat-icon {
+
+    width:
+        50px;
+
+    height:
+        50px;
+
+    border-radius:
+        12px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        #eef3ff;
+
+    color:
+        var(--primary);
+
+    font-size:
+        20px;
+
+}
+
+.stat-card span {
+
+    display:
+        block;
+
+    font-size:
+        24px;
+
+    font-weight:
+        800;
+
+}
+
+.stat-card small {
+
+    color:
+        var(--muted);
+
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main-container {
+
+    max-width:
+        1400px;
+
+    margin:
+        auto;
+
+    padding:
+        60px 30px;
+
+}
+
+
+/* =====================================================
+   FILTER PANEL
+===================================================== */
+
+.filter-panel {
+
+    background:
+        white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        20px;
+
+    padding:
+        28px;
+
+    box-shadow:
+        var(--shadow);
+
+}
+
+.filter-heading {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    margin-bottom:
+        25px;
+
+}
+
+.small-heading,
+.results-label {
+
+    font-size:
+        10px;
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        1.4px;
+
+    color:
+        var(--primary);
+
+}
+
+.filter-heading h2 {
+
+    margin-top:
+        5px;
+
+    font-size:
+        26px;
+
+}
+
+.reset-button {
+
+    border:
+        1px solid var(--border);
+
+    background:
+        white;
+
+    padding:
+        10px 15px;
+
+    border-radius:
+        8px;
+
+    cursor:
+        pointer;
+
+    font-weight:
+        600;
+
+    color:
+        #4b5563;
+
+}
+
+.reset-button:hover {
+
+    border-color:
+        var(--primary);
+
+    color:
+        var(--primary);
+
+}
+
+.filters {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr 1fr 220px;
+
+    gap:
+        18px;
+
+}
+
+.filter-group label {
+
+    display:
+        block;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    margin-bottom:
+        8px;
+
+}
+
+.select-wrapper {
+
+    position:
+        relative;
+
+}
+
+.select-wrapper i {
+
+    position:
+        absolute;
+
+    left:
+        15px;
+
+    top:
+        50%;
+
+    transform:
+        translateY(-50%);
+
+    color:
+        var(--primary);
+
+}
+
+.select-wrapper select {
+
+    width:
+        100%;
+
+    height:
+        48px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        10px;
+
+    background:
+        white;
+
+    padding:
+        0 15px 0 42px;
+
+    outline:
+        none;
+
+    font-size:
+        14px;
+
+}
+
+.select-wrapper select:focus {
+
+    border-color:
+        var(--primary);
+
+}
+
+.view-buttons {
+
+    height:
+        48px;
+
+    display:
+        flex;
+
+    background:
+        #f3f4f6;
+
+    padding:
+        4px;
+
+    border-radius:
+        10px;
+
+}
+
+.view-btn {
+
+    flex:
+        1;
+
+    border:
+        none;
+
+    border-radius:
+        7px;
+
+    background:
+        transparent;
+
+    cursor:
+        pointer;
+
+    font-weight:
+        600;
+
+}
+
+.view-btn.active {
+
+    background:
+        white;
+
+    color:
+        var(--primary);
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.07);
+
+}
+
+
+/* =====================================================
+   RESULTS
+===================================================== */
+
+.results-header {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    margin:
+        45px 0 20px;
+
+}
+
+.results-header h2 {
+
+    font-size:
+        28px;
+
+    margin-top:
+        5px;
+
+}
+
+.result-count {
+
+    background:
+        #eef3ff;
+
+    color:
+        var(--primary);
+
+    padding:
+        9px 15px;
+
+    border-radius:
+        30px;
+
+    font-size:
+        13px;
+
+    font-weight:
+        700;
+
+}
+
+
+/* =====================================================
+   BRANCH GRID
+===================================================== */
+
+.branch-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        20px;
+
+}
+
+.branch-card {
+
+    background:
+        white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        17px;
+
+    padding:
+        23px;
+
+    position:
+        relative;
+
+    transition:
+        .3s;
+
+    animation:
+        cardAppear .35s ease;
+
+}
+
+@keyframes cardAppear {
+
+    from {
+
+        opacity:
+            0;
+
+        transform:
+            translateY(10px);
 
     }
-);
 
+    to {
 
-bigFileInput.addEventListener(
-    "change",
-    function(event) {
+        opacity:
+            1;
 
-        loadFiles(
-            event.target.files
-        );
-
-    }
-);
-
-
-/* ==========================================
-   LOAD FILES
-========================================== */
-
-function loadFiles(files) {
-
-    if (!files || files.length === 0) {
-
-        return;
-
-    }
-
-
-    const fileList =
-        Array.from(files);
-
-
-    currentFile =
-        fileList[0];
-
-
-    const extension =
-        currentFile.name
-            .split(".")
-            .pop()
-            .toUpperCase();
-
-
-    document.getElementById(
-        "modelName"
-    ).innerText =
-        currentFile.name;
-
-
-    document.getElementById(
-        "fileFormat"
-    ).innerText =
-        extension;
-
-
-    document.getElementById(
-        "fileSize"
-    ).innerText =
-        formatFileSize(
-            currentFile.size
-        );
-
-
-    document.getElementById(
-        "propertyFile"
-    ).innerText =
-        currentFile.name;
-
-
-    document.getElementById(
-        "propertyFormat"
-    ).innerText =
-        extension;
-
-
-    loading.style.display =
-        "block";
-
-
-    status.innerText =
-        "Loading " +
-        currentFile.name +
-        "...";
-
-
-    modelLoaded = false;
-
-
-    try {
-
-        viewer.LoadModelFromFileList(
-            fileList
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        loading.style.display =
-            "none";
-
-        status.innerText =
-            "Loading error";
+        transform:
+            translateY(0);
 
     }
 
 }
 
+.branch-card:hover {
 
-/* ==========================================
-   FILE SIZE
-========================================== */
+    transform:
+        translateY(-5px);
 
-function formatFileSize(bytes) {
+    border-color:
+        rgba(9,47,135,.25);
 
-    if (bytes < 1024) {
+    box-shadow:
+        var(--shadow);
 
-        return bytes + " B";
+}
 
-    }
+.branch-top {
 
+    display:
+        flex;
 
-    if (bytes < 1024 * 1024) {
+    justify-content:
+        space-between;
 
-        return (
-            bytes / 1024
-        ).toFixed(1)
-        + " KB";
+    gap:
+        15px;
 
-    }
+    margin-bottom:
+        18px;
 
+}
 
-    return (
-        bytes /
-        (1024 * 1024)
-    ).toFixed(1)
-    + " MB";
+.branch-area {
+
+    font-size:
+        18px;
+
+    font-weight:
+        800;
+
+}
+
+.branch-location {
+
+    font-size:
+        12px;
+
+    color:
+        var(--muted);
+
+    margin-top:
+        5px;
+
+}
+
+.branch-icon {
+
+    width:
+        42px;
+
+    height:
+        42px;
+
+    min-width:
+        42px;
+
+    border-radius:
+        12px;
+
+    background:
+        #eef3ff;
+
+    color:
+        var(--primary);
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+}
+
+.branch-info {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        13px;
+
+    margin-bottom:
+        20px;
+
+}
+
+.info-row {
+
+    display:
+        flex;
+
+    align-items:
+        flex-start;
+
+    gap:
+        12px;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.5;
+
+}
+
+.info-row i {
+
+    width:
+        18px;
+
+    color:
+        var(--primary);
+
+    margin-top:
+        3px;
+
+}
+
+.info-row a {
+
+    color:
+        #374151;
+
+    text-decoration:
+        none;
+
+}
+
+.info-row a:hover {
+
+    color:
+        var(--primary);
+
+}
+
+.branch-actions {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:
+        8px;
+
+}
+
+.branch-button {
+
+    height:
+        42px;
+
+    border:
+        none;
+
+    border-radius:
+        8px;
+
+    cursor:
+        pointer;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        7px;
+
+    text-decoration:
+        none;
+
+}
+
+.call-button {
+
+    background:
+        #eef3ff;
+
+    color:
+        var(--primary);
+
+}
+
+.direction-button {
+
+    background:
+        var(--primary);
+
+    color:
+        white;
+
+}
+
+.direction-button:hover {
+
+    background:
+        var(--primary-dark);
 
 }
 
 
-/* ==========================================
-   FIT
-========================================== */
+/* =====================================================
+   MAP
+===================================================== */
 
-document
-    .getElementById("fitBtn")
-    .addEventListener(
-        "click",
-        function() {
+.map-container {
 
-            if (!viewer)
-                return;
+    min-height:
+        600px;
 
-            const internalViewer =
-                viewer.GetViewer();
+    border-radius:
+        20px;
 
-            if (
-                internalViewer &&
-                internalViewer.FitModel
-            ) {
+    background:
+        #e8edf5;
 
-                internalViewer.FitModel();
+    position:
+        relative;
 
-            }
+    overflow:
+        hidden;
 
-        }
-    );
+}
 
+.map-message {
 
-/* ==========================================
-   HOME
-========================================== */
+    position:
+        absolute;
 
-document
-    .getElementById("homeBtn")
-    .addEventListener(
-        "click",
-        function() {
+    left:
+        50%;
 
-            if (!viewer)
-                return;
+    top:
+        50%;
 
-            const internalViewer =
-                viewer.GetViewer();
+    transform:
+        translate(-50%,-50%);
 
-            if (
-                internalViewer &&
-                internalViewer.FitModel
-            ) {
+    background:
+        white;
 
-                internalViewer.FitModel();
+    padding:
+        35px;
 
-            }
+    border-radius:
+        15px;
 
-        }
-    );
+    text-align:
+        center;
 
+    max-width:
+        400px;
 
-/* ==========================================
-   WIREFRAME / EDGES
-========================================== */
+    box-shadow:
+        var(--shadow);
 
-let edgesVisible = true;
+}
 
+.map-message i {
 
-document
-    .getElementById("wireBtn")
-    .addEventListener(
-        "click",
-        function() {
+    font-size:
+        40px;
 
-            edgesVisible =
-                !edgesVisible;
+    color:
+        var(--primary);
 
+    margin-bottom:
+        15px;
 
-            status.innerText =
-                edgesVisible
-                    ? "Edges ON"
-                    : "Edges OFF";
+}
 
+.map-message h3 {
 
-            /*
-                The Online 3D Viewer engine
-                handles the actual edge
-                rendering internally.
+    margin-bottom:
+        8px;
 
-                Reloading with new parameters
-                is intentionally avoided here
-                so the model remains stable.
-            */
+}
 
-        }
-    );
+.map-message p {
 
+    color:
+        var(--muted);
 
-/* ==========================================
-   FULL SCREEN
-========================================== */
+    font-size:
+        13px;
 
-document
-    .getElementById("fullscreenBtn")
-    .addEventListener(
-        "click",
-        function() {
-
-            if (
-                !document.fullscreenElement
-            ) {
-
-                viewerElement
-                    .requestFullscreen();
-
-            }
-
-            else {
-
-                document.exitFullscreen();
-
-            }
-
-        }
-    );
-
-
-/* ==========================================
-   BACKGROUND
-========================================== */
-
-let darkBackground = true;
-
-
-document
-    .getElementById("backgroundBtn")
-    .addEventListener(
-        "click",
-        function() {
-
-            darkBackground =
-                !darkBackground;
-
-
-            viewerElement.style.background =
-                darkBackground
-                    ? "#101317"
-                    : "#eeeeee";
-
-        }
-    );
-
-
-/* ==========================================
-   AXES
-========================================== */
-
-document
-    .getElementById("axesBtn")
-    .addEventListener(
-        "click",
-        function() {
-
-            status.innerText =
-                "Axes control";
-
-        }
-    );
-
-
-/* ==========================================
-   MEASUREMENT
-========================================== */
-
-document
-    .getElementById("measureBtn")
-    .addEventListener(
-        "click",
-        function() {
-
-            if (!modelLoaded) {
-
-                alert(
-                    "Load a 3D model first."
-                );
-
-                return;
-
-            }
-
-
-            measurementBox.style.display =
-                "block";
-
-
-            status.innerText =
-                "Measurement mode";
-
-
-            /*
-                This opens the measurement
-                interface area.
-
-                Exact CAD edge/face measurement
-                will be added in the next
-                measurement module.
-            */
-
-        }
-    );
-
-
-/* ==========================================
-   CLOSE MEASUREMENT
-========================================== */
-
-document
-    .getElementById("closeMeasure")
-    .addEventListener(
-        "click",
-        function() {
-
-            measurementBox.style.display =
-                "none";
-
-            status.innerText =
-                "Ready";
-
-        }
-    );
-
-
-/* ==========================================
-   DRAG & DROP
-========================================== */
-
-viewerElement.addEventListener(
-    "dragover",
-    function(event) {
-
-        event.preventDefault();
-
-        dropArea.classList.add(
-            "dragging"
-        );
-
-    }
-);
-
-
-viewerElement.addEventListener(
-    "dragleave",
-    function() {
-
-        dropArea.classList.remove(
-            "dragging"
-        );
-
-    }
-);
-
-
-viewerElement.addEventListener(
-    "drop",
-    function(event) {
-
-        event.preventDefault();
-
-
-        dropArea.classList.remove(
-            "dragging"
-        );
-
-
-        const files =
-            event.dataTransfer.files;
-
-
-        loadFiles(files);
-
-    }
-);
-
-
-/* ==========================================
-   VIEW CONTROLS
-========================================== */
-
-function setView(view) {
-
-    status.innerText =
-        view.toUpperCase()
-        + " VIEW";
-
-
-    /*
-        Standard view handling is
-        intentionally kept here as the
-        control layer.
-
-        The Online 3D Viewer engine
-        manages the actual camera.
-    */
+    line-height:
+        1.6;
 
 }
 
 
-/* ==========================================
-   MODEL PROPERTIES
-========================================== */
+/* =====================================================
+   NO RESULTS
+===================================================== */
 
-function updateProperties() {
+.no-results {
 
-    if (!viewer)
-        return;
+    text-align:
+        center;
 
+    padding:
+        70px 20px;
 
-    const model =
-        viewer.GetModel();
+}
 
+.no-results-icon {
 
-    if (!model)
-        return;
+    width:
+        75px;
 
+    height:
+        75px;
 
-    /*
-        Basic model information.
+    margin:
+        auto;
 
-        Bounding box / exact geometry
-        properties can be connected to
-        the model object in the next
-        inspection module.
-    */
+    border-radius:
+        50%;
+
+    background:
+        #eef3ff;
+
+    color:
+        var(--primary);
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    font-size:
+        30px;
+
+}
+
+.no-results h3 {
+
+    margin:
+        20px 0 8px;
+
+}
+
+.no-results p {
+
+    color:
+        var(--muted);
+
+}
+
+.no-results button {
+
+    margin-top:
+        20px;
+
+    border:
+        none;
+
+    background:
+        var(--primary);
+
+    color:
+        white;
+
+    padding:
+        11px 20px;
+
+    border-radius:
+        8px;
+
+    cursor:
+        pointer;
 
 }
 
 
-/* ==========================================
-   RESIZE
-========================================== */
+/* =====================================================
+   FOOTER
+===================================================== */
 
-window.addEventListener(
-    "resize",
-    function() {
+.footer {
 
-        if (viewer) {
+    background:
+        #071b48;
 
-            viewer.Resize();
+    color:
+        white;
 
-        }
+    padding:
+        45px 30px 20px;
+
+}
+
+.footer-container {
+
+    max-width:
+        1400px;
+
+    margin:
+        auto;
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+}
+
+.footer-logo {
+
+    font-size:
+        24px;
+
+    font-weight:
+        800;
+
+}
+
+.footer p {
+
+    color:
+        rgba(255,255,255,.6);
+
+    font-size:
+        12px;
+
+    margin-top:
+        5px;
+
+}
+
+.footer-links {
+
+    display:
+        flex;
+
+    gap:
+        25px;
+
+}
+
+.footer-links a {
+
+    color:
+        rgba(255,255,255,.75);
+
+    text-decoration:
+        none;
+
+    font-size:
+        13px;
+
+}
+
+.copyright {
+
+    max-width:
+        1400px;
+
+    margin:
+        35px auto 0;
+
+    padding-top:
+        20px;
+
+    border-top:
+        1px solid rgba(255,255,255,.1);
+
+    text-align:
+        center;
+
+    color:
+        rgba(255,255,255,.45);
+
+    font-size:
+        11px;
+
+}
+
+
+/* =====================================================
+   UTILITY
+===================================================== */
+
+.hidden {
+    display:
+        none !important;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:1100px) {
+
+    .branch-grid {
+
+        grid-template-columns:
+            repeat(2,1fr);
 
     }
-);
 
+}
 
-/* ==========================================
-   KEYBOARD SHORTCUTS
-========================================== */
+@media(max-width:800px) {
 
-document.addEventListener(
-    "keydown",
-    function(event) {
+    .main-nav {
+        display:
+            none;
+    }
 
-        if (event.key === "f") {
+    .mobile-menu {
+        display:
+            block;
+    }
 
-            document
-                .getElementById("fitBtn")
-                .click();
+    .stats-container {
 
-        }
-
-
-        if (event.key === "Escape") {
-
-            measurementBox.style.display =
-                "none";
-
-        }
+        grid-template-columns:
+            1fr;
 
     }
-);
 
+    .filters {
 
-/* ==========================================
-   INITIAL STATUS
-========================================== */
+        grid-template-columns:
+            1fr;
 
-status.innerText =
-    "Ready - Open a 3D model";
+    }
+
+    .branch-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+    .footer-container {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+        gap:
+            25px;
+
+    }
+
+    .hero {
+
+        min-height:
+            440px;
+
+    }
+
+}
+
+@media(max-width:500px) {
+
+    .header-container {
+
+        padding:
+            14px 18px;
+
+    }
+
+    .main-container {
+
+        padding:
+            40px 15px;
+
+    }
+
+    .hero-content {
+
+        padding:
+            55px 18px;
+
+    }
+
+    .hero h1 {
+
+        font-size:
+            38px;
+
+    }
+
+    .filter-panel {
+
+        padding:
+            20px;
+
+    }
+
+    .results-header {
+
+        align-items:
+            flex-start;
+
+        gap:
+            15px;
+
+    }
+
+    .results-header h2 {
+
+        font-size:
+            22px;
+
+    }
+
+       }
